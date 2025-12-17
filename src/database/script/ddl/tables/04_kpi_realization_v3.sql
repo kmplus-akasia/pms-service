@@ -42,6 +42,9 @@ CREATE TABLE IF NOT EXISTS kpi_realization_v3 (
   CONSTRAINT fk_kpi_realization_approver
     FOREIGN KEY (approver_employee_number) REFERENCES tb_employee(employee_number),
 
+  CONSTRAINT fk_kpi_realization_file
+    FOREIGN KEY (file_id) REFERENCES file(file_id),
+
   INDEX idx_kpi_realization_employee (employee_number),
   INDEX idx_kpi_realization_approver (approver_employee_number),
   INDEX idx_kpi_realization_kpi (kpi_id),
