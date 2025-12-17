@@ -250,17 +250,45 @@ All major tables include corresponding log tables with full audit capabilities:
 3. **Set up environment variables**
 
    ```bash
-   cp .env.example .env
-   # Edit .env with your database and external system configurations
+   # Create .env file with your database configuration
+   cat > .env << EOF
+   # Database Configuration (required)
+   DB_HOST=localhost
+   DB_PORT=3306
+   DB_USERNAME=pms_user
+   DB_PASSWORD=your_password_here
+   DB_DATABASE=pms_db
+
+   # External Systems (configure as needed)
+   P_KPI_BASE_URL=https://p-kpi-api.example.com
+   MDM_BASE_URL=https://mdm-api.example.com
+   DICTIONARY_BASE_URL=https://dictionary-api.example.com
+   FILE_STORAGE_BASE_URL=https://files.example.com
+
+   # Application
+   JWT_SECRET=your_jwt_secret_here
+   PORT=3000
+   NODE_ENV=development
+   EOF
    ```
 
 4. **Set up database**
 
    ```bash
-   # Run database migrations in order
-   mysql -u username -p database_name < src/database/script/ddl/tables/01_kpi_v3.sql
-   mysql -u username -p database_name < src/database/script/ddl/tables/02_kpi_ownership_v3.sql
-   # ... continue with remaining tables
+   # Option 1: Using npm scripts (recommended)
+   npm run db:migrate
+
+   # Option 2: Manual migration with environment variables
+   DB_USERNAME=pms_user DB_PASSWORD=password DB_DATABASE=pms_db npm run db:migrate
+
+   # Option 3: Dry run (see what would be executed)
+   npm run db:migrate:dry
+
+   # Option 4: Force recreate tables
+   npm run db:migrate:force
+
+   # Option 5: Get help
+   npm run db:migrate:help
    ```
 
 5. **Start development server**
@@ -278,6 +306,12 @@ npm run start:debug        # Start with debug mode
 # Production
 npm run build             # Build for production
 npm run start:prod        # Start production server
+
+# Database Migration
+npm run db:migrate         # Run database migration
+npm run db:migrate:dry     # Dry run migration (show what would be executed)
+npm run db:migrate:force   # Force recreate tables
+npm run db:migrate:help    # Show migration help
 
 # Testing
 npm run test              # Run unit tests
@@ -419,11 +453,67 @@ refactor: optimize database queries
 - [ ] Tests written and passing
 - [ ] Documentation updated
 
+## 🔄 Database Migration
+
+### Automated Migration Script
+
+The PMS service includes a comprehensive migration script that handles the complete database setup:
+
+```bash
+# Full migration (recommended)
+npm run db:migrate
+
+# Dry run (see what would be executed)
+npm run db:migrate:dry
+
+# Force recreate all tables (WARNING: drops data)
+npm run db:migrate:force
+
+# Show help
+npm run db:migrate:help
+```
+
+### Migration Features
+
+- ✅ **Environment validation** - Checks required DB credentials
+- ✅ **Connection testing** - Verifies database connectivity
+- ✅ **Dependency ordering** - Creates tables in correct sequence
+- ✅ **Performance indexes** - Adds 50+ optimized indexes
+- ✅ **Validation checks** - Verifies successful migration
+- ✅ **Progress feedback** - Detailed console output
+- ✅ **Error handling** - Comprehensive error reporting
+- ✅ **Dry-run mode** - Safe testing without changes
+
+### Manual Migration (Alternative)
+
+```bash
+# 1. Create tables in order
+mysql -u username -p database_name < src/database/script/ddl/tables/01_kpi_v3.sql
+mysql -u username -p database_name < src/database/script/ddl/tables/02_kpi_ownership_v3.sql
+# ... continue with all 15 table files
+
+# 2. Add performance indexes
+mysql -u username -p database_name < src/database/script/ddl/indexes/01_performance_indexes.sql
+```
+
+### Environment Configuration
+
+Required environment variables for migration:
+
+```bash
+DB_HOST=localhost          # MySQL host
+DB_PORT=3306              # MySQL port
+DB_USERNAME=pms_user       # Database username
+DB_PASSWORD=password       # Database password
+DB_DATABASE=pms_db         # Database name
+```
+
 ## 📞 Support
 
 - **Business Requirements**: Refer to `docs/prd/PEL-004-PMS-BRD.md`
 - **API Documentation**: Generated via Swagger/OpenAPI
-- **Database Schema**: `src/database/script/ddl/tables/`
+- **Database Schema**: `src/database/script/ddl/tables/README.md`
+- **Migration Script**: `src/database/script/ddl/index.js`
 - **Mock Data**: Available in `docs/prd/` for testing
 
 ## 📄 License
