@@ -12,8 +12,8 @@ import {
 import { KpiEntity, Polarity } from './kpi.entity';
 
 @Entity('kpi_score_v3')
-@Index(['year', 'month', 'quarter'])
-@Index(['employeeNumber', 'year', 'quarter'])
+@Index(['year', 'month'])
+@Index(['employeeNumber', 'year'])
 @Index(['kpiId', 'year', 'month'])
 @Index(['conclusionDate', 'employeeNumber'])
 export class KpiScoreEntity {

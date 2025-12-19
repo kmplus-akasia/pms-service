@@ -333,7 +333,16 @@ async function runIndexCreation(connection) {
     }
 
     info(`Creating performance indexes from ${INDEX_FILE}`);
-    await connection.execute(sql);
+
+    const sqls = sql.split(';');
+    for (const sql of sqls) {
+      // console.log(sql);
+      if (sql.trim()) {
+        await connection.execute(sql);
+      }
+    }
+
+    // await connection.execute(sql);
     success('Performance indexes created successfully');
     return true;
   } catch (err) {
@@ -446,7 +455,7 @@ async function runMigration() {
       if (!await runTableMigrations(connection)) return;
 
       // Run index creation
-      // if (!await runIndexCreation(connection)) return;
+      if (!await runIndexCreation(connection)) return;
 
       // Run validation checks
       await runValidationChecks(connection);

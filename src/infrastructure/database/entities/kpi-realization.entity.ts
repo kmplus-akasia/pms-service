@@ -25,7 +25,7 @@ export enum ApprovalStatus {
 }
 
 @Entity('kpi_realization_v3')
-@Index(['year', 'month', 'quarter'])
+@Index(['year', 'month'])
 @Index(['submissionStatus', 'approvalStatus'])
 @Index(['employeeNumber', 'year', 'month'])
 @Index(['approverEmployeeNumber', 'approvalStatus'])

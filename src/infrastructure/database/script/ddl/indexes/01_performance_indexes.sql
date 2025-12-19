@@ -1,16 +1,3 @@
--- =====================================================
--- Performance Indexes for PMS Database Schema
--- =====================================================
--- Purpose: Optimize query performance for common operations
--- Created: December 2025
--- Version: 1.0.0
--- =====================================================
-
--- =====================================================
--- TABLE: kpi_v3
--- Purpose: Main KPI definitions and management
--- =====================================================
-
 -- Composite index for filtering by type and active status
 -- Used in: Dashboard queries, KPI listing by type
 ALTER TABLE kpi_v3
@@ -291,12 +278,4 @@ ALTER TABLE kpi_employee_performance_score_final_v3
 -- Used in: Quarterly position performance analysis
 ALTER TABLE kpi_position_performance_score_final_v3
   ADD INDEX idx_pos_final_score_period (position_master_variant_id, year, quarter);
-
--- =====================================================
--- END OF PERFORMANCE INDEXES
--- =====================================================
--- Total Indexes Added: 50+
--- Expected Performance Improvement: 40-60% on common queries
--- Maintenance: Review quarterly, rebuild if fragmented
--- =====================================================
 

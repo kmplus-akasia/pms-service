@@ -5,14 +5,12 @@ import { ConfigService } from '@nestjs/config';
 export interface DatabaseConfig {
   host: string;
   port: number;
-  username: string;
+  user: string;
   password: string;
   database: string;
   connectionLimit: number;
-  acquireTimeout: number;
-  timeout: number;
-  reconnect: boolean;
-  reconnectInterval: number;
+  acquireTimeoutMillis?: number;
+  timeout?: number;
 }
 
 @Injectable()
@@ -37,17 +35,14 @@ export class MysqlService implements OnModuleInit, OnModuleDestroy {
     const config: DatabaseConfig = {
       host: this.configService.get('DB_HOST') || 'localhost',
       port: parseInt(this.configService.get('DB_PORT') || '3306', 10),
-      username: this.configService.get('DB_USERNAME') || '',
+      user: this.configService.get('DB_USERNAME') || '',
       password: this.configService.get('DB_PASSWORD') || '',
       database: this.configService.get('DB_DATABASE') || '',
       connectionLimit: parseInt(this.configService.get('DB_CONNECTION_LIMIT') || '10', 10),
-      acquireTimeout: 60000,
-      timeout: 60000,
-      reconnect: true,
-      reconnectInterval: 5000,
+      acquireTimeoutMillis: 60000,
     };
 
-    if (!config.username || !config.password || !config.database) {
+    if (!config.user || !config.password || !config.database) {
       throw new Error(
         'Database configuration incomplete. Please set DB_USERNAME, DB_PASSWORD, and DB_DATABASE environment variables.'
       );
