@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import * as mysql from 'mysql2/promise';
+import { ConfigService } from '@nestjs/config';
 
 export interface DatabaseConfig {
   host: string;
@@ -20,7 +21,9 @@ export class MysqlService implements OnModuleInit, OnModuleDestroy {
   private pool: mysql.Pool;
   private isConnected = false;
 
-  constructor() {}
+  constructor(
+    private readonly configService: ConfigService,
+  ) {}
 
   async onModuleInit() {
     await this.createConnectionPool();
@@ -32,12 +35,12 @@ export class MysqlService implements OnModuleInit, OnModuleDestroy {
 
   private async createConnectionPool() {
     const config: DatabaseConfig = {
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT || '3306', 10),
-      username: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_DATABASE,
-      connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT || '10', 10),
+      host: this.configService.get('DB_HOST') || 'localhost',
+      port: parseInt(this.configService.get('DB_PORT') || '3306', 10),
+      username: this.configService.get('DB_USERNAME') || '',
+      password: this.configService.get('DB_PASSWORD') || '',
+      database: this.configService.get('DB_DATABASE') || '',
+      connectionLimit: parseInt(this.configService.get('DB_CONNECTION_LIMIT') || '10', 10),
       acquireTimeout: 60000,
       timeout: 60000,
       reconnect: true,

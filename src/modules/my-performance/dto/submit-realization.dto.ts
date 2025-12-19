@@ -3,12 +3,14 @@ import {
   IsNotEmpty,
   IsNumber,
   Min,
+  Max,
   IsString,
   Length,
   IsOptional,
   IsArray,
   ArrayMinSize,
   ValidateNested,
+  IsIn,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 

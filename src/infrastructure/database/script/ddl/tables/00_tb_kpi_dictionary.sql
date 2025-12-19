@@ -1,0 +1,31 @@
+-- defaultdb.tb_kpi_dictionary definition
+
+CREATE TABLE IF NOT EXISTS tb_kpi_dictionary (
+  kpi_dictionary_id bigint NOT NULL AUTO_INCREMENT,
+  company_id int NOT NULL,
+  indicator_name varchar(2000) NOT NULL,
+  indicator_description varchar(2000) DEFAULT NULL,
+  indicator_function varchar(2000) DEFAULT NULL,
+  unit int DEFAULT NULL COMMENT '1:Currency, 2:%, 3:Number (#), 4:Day',
+  polarity int DEFAULT NULL COMMENT '1:Positif, 2:Negatif, 3:Netral',
+  formula varchar(2000) DEFAULT NULL,
+  perspective int DEFAULT NULL COMMENT '1:Financial, 2:Customer, 3:Internal Business Process, 4:Learning & Growth',
+  measurement_period int DEFAULT NULL COMMENT '1:Triwulanan, 2:Semesteran, 3:Tahunan',
+  producer_data varchar(255) DEFAULT NULL,
+  parent_id bigint DEFAULT NULL,
+  status int DEFAULT NULL COMMENT '1:Accepted, 2:On Review, 3:Rejected, 4:Draft, 5:Archived',
+  created_at timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at timestamp NULL DEFAULT NULL,
+  created_by int DEFAULT NULL,
+  updated_by int DEFAULT NULL,
+  approval_by int DEFAULT NULL,
+  approval_date timestamp NULL DEFAULT NULL,
+  reject_by int DEFAULT NULL,
+  reject_date timestamp NULL DEFAULT NULL,
+  reject_note varchar(255) DEFAULT NULL,
+  deleted_at timestamp NULL DEFAULT NULL,
+  deleted_by int DEFAULT NULL,
+  PRIMARY KEY (kpi_dictionary_id),
+  KEY tb_kpi_dictionary_tb_company_in_company_in_id_fk (company_id),
+  CONSTRAINT tb_kpi_dictionary_tb_company_in_company_in_id_fk FOREIGN KEY (company_id) REFERENCES tb_company_in (company_in_id) ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

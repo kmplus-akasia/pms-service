@@ -1,0 +1,31 @@
+-- defaultdb.tb_employee_position_master_sync definition
+
+CREATE TABLE IF NOT EXISTS tb_employee_position_master_sync (
+  employee_position_master_sync_id int NOT NULL AUTO_INCREMENT,
+  position_master_variant_id int NOT NULL,
+  employee_number varchar(25) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  lakhar_id int DEFAULT NULL,
+  job_sharing_id int DEFAULT NULL,
+  created_by int DEFAULT NULL,
+  last_updated_at timestamp NULL DEFAULT NULL,
+  last_updated_by int DEFAULT NULL,
+  start_date datetime NOT NULL,
+  end_date datetime DEFAULT '9999-12-31 16:59:59',
+  createdAt timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updatedAt timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deletedAt timestamp NULL DEFAULT NULL,
+  sk_file_id int DEFAULT NULL,
+  mutation_type varchar(25) DEFAULT NULL,
+  job_history_description text,
+  sk_date_issued datetime DEFAULT NULL,
+  sk_number varchar(255) DEFAULT NULL,
+  bidang_1 text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  bidang_2 text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  bidang_3 text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  kontribusi_signifikan longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  level text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  PRIMARY KEY (employee_position_master_sync_id),
+  KEY idx_tb_employee_position_master_sync_employee (employee_number,start_date,end_date,lakhar_id,job_sharing_id),
+  KEY idx_tepms_employee_number (employee_number,start_date,end_date),
+  KEY idx_employee_position_sync_main (employee_number,position_master_variant_id,deletedAt,lakhar_id,start_date,end_date)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

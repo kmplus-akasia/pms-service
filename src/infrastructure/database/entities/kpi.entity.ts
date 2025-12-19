@@ -51,6 +51,11 @@ export enum Source {
   MIGRATION = 'MIGRATION',
 }
 
+export enum TargetType {
+  FIXED = 'FIXED',
+  PROGRESSIVE = 'PROGRESSIVE',
+}
+
 export enum ItemApprovalStatus {
   DRAFT = 'DRAFT',
   WAITING_FOR_APPROVAL = 'WAITING_FOR_APPROVAL',

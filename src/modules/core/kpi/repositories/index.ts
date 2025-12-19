@@ -1,8 +1,8 @@
 // KPI Repository
-export { KpiRepository, KpiWithOwnership } from './kpi.repository';
+export { KpiRepository, type KpiWithOwnership } from './kpi.repository';
 
 // Realization Repository
 export { RealizationRepository } from './realization.repository';
 
 // Score Repository
-export { ScoreRepository, ScoreCalculationData } from './score.repository';
+export { ScoreRepository, type MonthlyPerformanceSummary, type ScoreFilters, type ScoreCalculationData } from './score.repository';

@@ -64,6 +64,17 @@ const colors = {
 
 // Migration file order
 const MIGRATION_FILES = [
+  // Only run this if you are importing to brand new db
+  '00_tb_employee.sql',
+  '00_tb_company_in.sql',
+  '00_tb_group_master.sql',
+  '00_tb_position_master_v2.sql',
+  '00_tb_position_master_variant.sql',
+  '00_tb_employee_position_master_sync.sql',
+  '00_tb_position_master_organization_sync.sql',
+  '00_tb_file.sql',
+  '00_tb_kpi_dictionary.sql',
+
   // Core tables (in dependency order)
   '01_kpi_v3.sql',
   '02_kpi_ownership_v3.sql',
@@ -398,11 +409,6 @@ ${colors.bright}Next Steps:${colors.reset}
   3. Configure external system integrations (P-KPI, MDM)
   4. Test the API endpoints
 
-${colors.bright}Documentation:${colors.reset}
-  • Schema Documentation: src/database/script/ddl/tables/README.md
-  • API Documentation: Available via Swagger/OpenAPI
-  • PRD Documents: docs/prd/
-
 ${colors.yellow}⚠️  Remember to backup your database regularly!${colors.reset}
 `, 'green');
 }
@@ -440,7 +446,7 @@ async function runMigration() {
       if (!await runTableMigrations(connection)) return;
 
       // Run index creation
-      if (!await runIndexCreation(connection)) return;
+      // if (!await runIndexCreation(connection)) return;
 
       // Run validation checks
       await runValidationChecks(connection);

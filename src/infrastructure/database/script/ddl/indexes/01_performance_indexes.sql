@@ -77,9 +77,9 @@ ALTER TABLE kpi_ownership_v3
 -- =====================================================
 
 -- Composite index for period-based queries
--- Used in: Monthly/quarterly realization reports
+-- Used in: Monthly realization reports
 ALTER TABLE kpi_realization_v3
-  ADD INDEX idx_realization_period (year, month, quarter);
+  ADD INDEX idx_realization_period (year, month);
 
 -- Composite index for submission and approval status
 -- Used in: Approval queue, pending submissions dashboard
@@ -117,14 +117,14 @@ ALTER TABLE kpi_realization_v3
 -- =====================================================
 
 -- Composite index for period-based scoring
--- Used in: Monthly/quarterly score reports
+-- Used in: Monthly score reports
 ALTER TABLE kpi_score_v3
-  ADD INDEX idx_score_period (year, month, quarter);
+  ADD INDEX idx_score_period (year, month);
 
 -- Composite index for employee period scoring
 -- Used in: Employee performance dashboard, score history
 ALTER TABLE kpi_score_v3
-  ADD INDEX idx_score_employee_period (employee_number, year, quarter);
+  ADD INDEX idx_score_employee_period (employee_number, year, month);
 
 -- Index for KPI-specific scoring
 -- Used in: Individual KPI score tracking
@@ -186,10 +186,8 @@ ALTER TABLE kpi_log_v3
 -- Purpose: Performance calendar and scheduling
 -- =====================================================
 
--- Composite index for year-quarter queries
--- Used in: Quarterly schedule lookups
-ALTER TABLE kpi_schedule_v3
-  ADD INDEX idx_schedule_year_quarter (year, quarter);
+-- Note: year and quarter columns not implemented in kpi_schedule_v3
+-- Composite index for year-quarter queries would be added when columns are available
 
 -- Index for schedule type
 -- Used in: Planning vs monitoring vs calibration schedules
@@ -201,10 +199,8 @@ ALTER TABLE kpi_schedule_v3
 ALTER TABLE kpi_schedule_v3
   ADD INDEX idx_schedule_dates (start_date, end_date);
 
--- Index for active schedules
--- Used in: Current active schedule queries
-ALTER TABLE kpi_schedule_v3
-  ADD INDEX idx_schedule_active (is_active);
+-- Note: is_active column not implemented in kpi_schedule_v3
+-- Index for active schedules would be added when column is available
 
 -- =====================================================
 -- TABLE: position_cohort

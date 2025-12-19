@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { KpiEntity, KpiOwnershipEntity, ItemApprovalStatus, KpiType } from '../../../../infrastructure/database/entities';
 
-export interface KpiWithOwnership {
+export type KpiWithOwnership = {
   kpi: KpiEntity;
   ownership: KpiOwnershipEntity;
   isOwner: boolean;

@@ -1,6 +1,41 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { KpiType, Polarity, TargetType, CascadingMethod, ItemApprovalStatus } from '../../infrastructure/database/entities/kpi.entity';
-import { OwnershipType } from '../../infrastructure/database/entities/kpi-ownership.entity';
+
+// Temporary enum definitions to fix import issues
+enum KpiType {
+  IMPACT = 'IMPACT',
+  OUTPUT = 'OUTPUT',
+  KAI = 'KAI',
+}
+
+enum Polarity {
+  NEUTRAL = 'NEUTRAL',
+  POSITIVE = 'POSITIVE',
+  NEGATIVE = 'NEGATIVE',
+}
+
+enum TargetType {
+  FIXED = 'FIXED',
+  PROGRESSIVE = 'PROGRESSIVE',
+}
+
+enum CascadingMethod {
+  DIRECT = 'DIRECT',
+  INDIRECT = 'INDIRECT',
+}
+
+enum ItemApprovalStatus {
+  DRAFT = 'DRAFT',
+  WAITING_FOR_APPROVAL = 'WAITING_FOR_APPROVAL',
+  REJECTED = 'REJECTED',
+  READY = 'READY',
+  APPROVED = 'APPROVED',
+}
+
+enum OwnershipType {
+  OWNER = 'OWNER',
+  SHARED_OWNER = 'SHARED_OWNER',
+  COLLABORATOR = 'COLLABORATOR',
+}
 
 export enum KpiStatus {
   DRAFT = 'DRAFT',
@@ -125,7 +160,7 @@ export class KpiResponseDto {
   @ApiProperty({
     description: 'Polarity',
     enum: Polarity,
-    example: Polarity.MAXIMIZE,
+    example: Polarity.POSITIVE,
   })
   polarity: Polarity;
 

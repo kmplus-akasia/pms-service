@@ -8,10 +8,9 @@ import { FileService } from '../../../infrastructure/file-storage/file.service';
 // Repositories
 import {
   KpiRepository,
-  KpiWithOwnership,
+  type KpiWithOwnership,
   RealizationRepository,
   ScoreRepository,
-  ScoreCalculationData,
 } from '../../core/kpi/repositories';
 
 // Entities
@@ -26,7 +25,7 @@ import {
 } from '../../../infrastructure/database/entities';
 
 // DTOs
-import { CreateKpiDto } from '../dto/create-kpi.dto';
+import { CreateKpiDto, TargetType } from '../dto/create-kpi.dto';
 import { SubmitRealizationDto } from '../dto/submit-realization.dto';
 import { KpiResponseDto, KpiStatus, MonitoringStatus } from '../dto/kpi-response.dto';
 import { DashboardResponseDto, PeriodType } from '../dto/dashboard.response.dto';
@@ -490,8 +489,8 @@ export class MyPerformanceService {
       type: kpi.type,
       targetValue: kpi.target,
       targetUnit: kpi.targetUnit,
-      targetType: 'FIXED', // TODO: Map from entity
-      polarity: kpi.polarity === 'POSITIVE' ? 'MAXIMIZE' : 'MINIMIZE',
+      targetType: TargetType.FIXED, // TODO: Map from entity
+      polarity: kpi.polarity === Polarity.POSITIVE ? Polarity.POSITIVE : Polarity.NEGATIVE,
       cascadingMethod: kpi.cascadingMethod,
       weight: ownership.weight,
       status,

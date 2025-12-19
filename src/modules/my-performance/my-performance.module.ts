@@ -6,13 +6,7 @@ import { MyPerformanceController } from './controllers/my-performance.controller
 // Services
 import { MyPerformanceService } from './services/my-performance.service';
 
-// Repositories
-import { KpiRepository } from './repositories/kpi.repository';
-import { RealizationRepository } from './repositories/realization.repository';
-import { ScoreRepository } from './repositories/score.repository';
 
-// Guards
-import { OwnershipGuard } from './guards/ownership.guard';
 
 // Infrastructure dependencies
 import {
@@ -38,13 +32,9 @@ import { CoreModule } from '../core/core.module';
   providers: [
     // Services
     MyPerformanceService,
-
-    // Guards
-    OwnershipGuard,
   ],
   exports: [
     MyPerformanceService,
-    OwnershipGuard,
   ],
 })
 export class MyPerformanceModule {}

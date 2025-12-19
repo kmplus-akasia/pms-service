@@ -31,6 +31,7 @@ export {
   KpiOwnershipType,
   Source,
   ItemApprovalStatus,
+  TargetType,
 } from './kpi.entity';
 
 export { OwnershipType, WeightApprovalStatus } from './kpi-ownership.entity';

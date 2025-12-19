@@ -1,0 +1,32 @@
+-- defaultdb.tb_group_master definition
+
+CREATE TABLE IF NOT EXISTS tb_group_master (
+  group_master_id int NOT NULL AUTO_INCREMENT,
+  name varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  parent_id int DEFAULT NULL,
+  company_id int DEFAULT NULL,
+  notes text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  org_level int DEFAULT NULL,
+  org_type varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT 'DEPRECATED, use organization_type_id',
+  costcenter varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  start_date datetime DEFAULT NULL,
+  end_date datetime DEFAULT NULL,
+  createdAt timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updatedAt timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deletedAt timestamp NULL DEFAULT NULL,
+  chief int DEFAULT NULL,
+  organization_type_id int unsigned DEFAULT NULL,
+  created_by int DEFAULT NULL COMMENT 'user id',
+  last_updated_by int DEFAULT NULL COMMENT 'user id',
+  chief_employee_position_id int DEFAULT NULL COMMENT 'refers to tb_employee_position_master_sync',
+  is_kmap_available tinyint unsigned DEFAULT '0',
+  p_kpi_group_code varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  p_kpi_group_code_text varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  archievedAt timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (group_master_id),
+  KEY tb_group_master_FK (chief_employee_position_id) USING BTREE,
+  KEY tb_group_master_FK_1 (parent_id) USING BTREE,
+  KEY tb_group_master_FK_2 (organization_type_id) USING BTREE,
+  KEY tb_group_master_FK_3 (company_id) USING BTREE,
+  KEY idx_name (name)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

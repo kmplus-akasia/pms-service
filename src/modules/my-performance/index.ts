@@ -7,8 +7,6 @@ export { MyPerformanceController } from './controllers/my-performance.controller
 // Services
 export { MyPerformanceService } from './services/my-performance.service';
 
-// Guards
-export { OwnershipGuard, RequireOwnership, RequireOwner, RequireCanEdit, RequireCanInputRealization, AllowSharedOwner } from './guards/ownership.guard';
 
 // DTOs
 export { CreateKpiDto } from './dto/create-kpi.dto';

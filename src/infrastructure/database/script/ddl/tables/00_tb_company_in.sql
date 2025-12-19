@@ -1,0 +1,32 @@
+-- defaultdb.tb_company_in definition
+
+CREATE TABLE IF NOT EXISTS tb_company_in (
+  company_in_id int NOT NULL AUTO_INCREMENT,
+  parent_id int DEFAULT NULL,
+  objid varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  name text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  tier int DEFAULT NULL,
+  notes text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  code varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  type_org varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  company_type_id int unsigned DEFAULT NULL,
+  chief_employee_position_id int DEFAULT NULL COMMENT 'refers to tb_employee_position',
+  meta_begda date DEFAULT NULL,
+  meta_enda date DEFAULT NULL,
+  createdAt timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updatedAt timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  deletedAt timestamp NULL DEFAULT NULL,
+  address text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci,
+  created_by int DEFAULT NULL COMMENT 'user id',
+  end_date datetime DEFAULT NULL,
+  is_internal tinyint(1) DEFAULT NULL,
+  last_updated_by int DEFAULT NULL COMMENT 'user id',
+  start_date datetime DEFAULT NULL,
+  Column22 varchar(50) DEFAULT NULL,
+  Column23 varchar(50) DEFAULT NULL,
+  Column24 varchar(50) DEFAULT NULL,
+  Column25 varchar(50) DEFAULT NULL,
+  Column26 varchar(50) DEFAULT NULL,
+  PRIMARY KEY (company_in_id),
+  KEY idx_type_org (type_org)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

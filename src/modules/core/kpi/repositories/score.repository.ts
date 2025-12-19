@@ -3,6 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { KpiScoreEntity, Polarity } from '../../../../infrastructure/database/entities';
 
+export interface MonthlyPerformanceSummary {
+  employeeNumber: string;
+  year: number;
+  month: number;
+  totalScore: number;
+  kpiCount: number;
+  averageAchievement: number;
+}
 export interface ScoreFilters {
   employeeNumber?: string;
   kpiId?: number;
@@ -256,10 +264,12 @@ export class ScoreRepository {
       }
 
       // Convert to array
-      const result = [];
+      const result : MonthlyPerformanceSummary[] = [];
       for (let month = 1; month <= 12; month++) {
         const data = monthlySummary.get(month);
         result.push({
+          employeeNumber: employeeNumber,
+          year,
           month,
           totalScore: data?.totalScore || 0,
           kpiCount: data?.kpiCount || 0,
