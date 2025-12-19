@@ -9,6 +9,7 @@ import {
   JoinColumn,
   Index,
 } from 'typeorm';
+import { KpiEntity } from './kpi.entity';
 import {
   KpiType,
   NatureOfWork,

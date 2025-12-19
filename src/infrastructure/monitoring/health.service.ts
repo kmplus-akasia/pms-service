@@ -60,9 +60,9 @@ export class HealthService {
     ]);
 
     const services = {
-      database: dbHealth.status === 'fulfilled' && dbHealth.value ? 'up' : 'down',
-      redis: redisHealth.status === 'fulfilled' && redisHealth.value ? 'up' : 'down',
-      rabbitmq: rabbitHealth.status === 'fulfilled' && rabbitHealth.value ? 'up' : 'down',
+      database: (dbHealth.status === 'fulfilled' && dbHealth.value ? 'up' : 'down') as 'up' | 'down',
+      redis: (redisHealth.status === 'fulfilled' && redisHealth.value ? 'up' : 'down') as 'up' | 'down',
+      rabbitmq: (rabbitHealth.status === 'fulfilled' && rabbitHealth.value ? 'up' : 'down') as 'up' | 'down',
     };
 
     const allHealthy = Object.values(services).every(status => status === 'up');

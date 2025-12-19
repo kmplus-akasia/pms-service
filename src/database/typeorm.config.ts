@@ -13,7 +13,7 @@ import {
   KpiScheduleEntity,
   KpiLogEntity,
   CohortKpiFormulaLogEntity,
-} from './entities';
+} from '../infrastructure/database/entities';
 
 export const typeormConfig: TypeOrmModuleOptions = {
   type: 'mysql',

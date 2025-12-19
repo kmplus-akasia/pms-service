@@ -31,24 +31,28 @@ export class MysqlService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async createConnectionPool() {
+    const username = process.env.DB_USERNAME;
+    const password = process.env.DB_PASSWORD;
+    const database = process.env.DB_DATABASE;
+
+    if (!username || !password || !database) {
+      throw new Error(
+        'Database configuration incomplete. Please set DB_USERNAME, DB_PASSWORD, and DB_DATABASE environment variables.'
+      );
+    }
+
     const config: DatabaseConfig = {
       host: process.env.DB_HOST || 'localhost',
       port: parseInt(process.env.DB_PORT || '3306', 10),
-      username: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_DATABASE,
+      username,
+      password,
+      database,
       connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT || '10', 10),
       acquireTimeout: 60000,
       timeout: 60000,
       reconnect: true,
       reconnectInterval: 5000,
     };
-
-    if (!config.username || !config.password || !config.database) {
-      throw new Error(
-        'Database configuration incomplete. Please set DB_USERNAME, DB_PASSWORD, and DB_DATABASE environment variables.'
-      );
-    }
 
     try {
       this.pool = mysql.createPool(config);

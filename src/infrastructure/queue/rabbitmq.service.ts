@@ -20,8 +20,8 @@ export interface QueueMessage {
 @Injectable()
 export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
   private logger = new Logger(RabbitMQService.name);
-  private connection: amqp.Connection;
-  private channel: amqp.Channel;
+  private connection: any;
+  private channel: any;
   private isConnected = false;
 
   constructor() {}
@@ -245,7 +245,7 @@ export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
     }
 
     try {
-      const queueInfo = await this.channel.assertQueue(queue, { passive: true });
+      const queueInfo = await this.channel.assertQueue(queue, { passive: true } as any);
       return queueInfo.messageCount;
     } catch (error) {
       this.logger.error(`Failed to get message count for queue: ${queue}`, error);

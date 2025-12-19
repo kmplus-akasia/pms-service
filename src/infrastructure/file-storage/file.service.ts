@@ -267,7 +267,7 @@ export class FileService {
   /**
    * Validate file before upload
    */
-  validateFile(file: Express.Multer.File, maxSizeMB = 10): {
+  validateFile(file: any, maxSizeMB = 10): {
     isValid: boolean;
     error?: string;
   } {

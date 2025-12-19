@@ -12,6 +12,10 @@ import {
   MonitoringModule,
 } from './infrastructure';
 
+// Feature modules
+import { AuthModule } from './modules/auth';
+import { MyPerformanceModule } from './modules/my-performance';
+
 @Module({
   imports: [
     // Infrastructure layer
@@ -21,9 +25,10 @@ import {
     RabbitMQModule, // Message queuing
     FileModule,     // File storage operations
     MonitoringModule, // Health checks and monitoring
+    AuthModule,     // Authentication and authorization
 
-    // Feature modules will be added here
-    // AuthModule, MyPerformanceModule, TeamModule, etc.
+    // Feature modules
+    MyPerformanceModule,
   ],
   controllers: [AppController],
   providers: [AppService],
