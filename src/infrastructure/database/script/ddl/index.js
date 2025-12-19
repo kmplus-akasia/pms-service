@@ -65,15 +65,15 @@ const colors = {
 // Migration file order
 const MIGRATION_FILES = [
   // Only run this if you are importing to brand new db
-  '00_tb_employee.sql',
-  '00_tb_company_in.sql',
-  '00_tb_group_master.sql',
-  '00_tb_position_master_v2.sql',
-  '00_tb_position_master_variant.sql',
-  '00_tb_employee_position_master_sync.sql',
-  '00_tb_position_master_organization_sync.sql',
-  '00_tb_file.sql',
-  '00_tb_kpi_dictionary.sql',
+  // '00_tb_employee.sql',
+  // '00_tb_company_in.sql',
+  // '00_tb_group_master.sql',
+  // '00_tb_position_master_v2.sql',
+  // '00_tb_position_master_variant.sql',
+  // '00_tb_employee_position_master_sync.sql',
+  // '00_tb_position_master_organization_sync.sql',
+  // '00_tb_file.sql',
+  // '00_tb_kpi_dictionary.sql',
 
   // Core tables (in dependency order)
   '01_kpi_v3.sql',
