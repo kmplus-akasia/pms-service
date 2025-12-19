@@ -1,20 +1,28 @@
 import { Injectable, Logger, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource, In } from 'typeorm';
+import { DataSource } from 'typeorm';
 
 // Infrastructure services
 import { RedisService } from '../../../infrastructure/cache/redis.service';
 import { FileService } from '../../../infrastructure/file-storage/file.service';
+
+// Repositories
+import {
+  KpiRepository,
+  KpiWithOwnership,
+  RealizationRepository,
+  ScoreRepository,
+  ScoreCalculationData,
+} from '../../core/kpi/repositories';
 
 // Entities
 import {
   KpiEntity,
   KpiOwnershipEntity,
   KpiRealizationEntity,
-  KpiScoreEntity,
   ItemApprovalStatus,
   KpiType,
   Source,
+  Polarity,
 } from '../../../infrastructure/database/entities';
 
 // DTOs
@@ -32,31 +40,14 @@ interface UserContext {
   permissions: string[];
 }
 
-interface KpiWithOwnership {
-  kpi: KpiEntity;
-  ownership: KpiOwnershipEntity;
-  isOwner: boolean;
-  canEdit: boolean;
-  canInputRealization: boolean;
-}
-
 @Injectable()
 export class MyPerformanceService {
   private logger = new Logger(MyPerformanceService.name);
 
   constructor(
-    @InjectRepository(KpiEntity)
-    private readonly kpiRepository: Repository<KpiEntity>,
-
-    @InjectRepository(KpiOwnershipEntity)
-    private readonly ownershipRepository: Repository<KpiOwnershipEntity>,
-
-    @InjectRepository(KpiRealizationEntity)
-    private readonly realizationRepository: Repository<KpiRealizationEntity>,
-
-    @InjectRepository(KpiScoreEntity)
-    private readonly scoreRepository: Repository<KpiScoreEntity>,
-
+    private readonly kpiRepository: KpiRepository,
+    private readonly realizationRepository: RealizationRepository,
+    private readonly scoreRepository: ScoreRepository,
     private readonly dataSource: DataSource,
     private readonly redisService: RedisService,
     private readonly fileService: FileService,
@@ -85,7 +76,7 @@ export class MyPerformanceService {
     const scores = await this.calculateUserScores(user.employeeNumber, currentPeriod);
 
     // Get status summary
-    const statusSummary = await this.getStatusSummary(userKpis);
+    const statusSummary = await this.kpiRepository.getDashboardStats(user.employeeNumber);
 
     // Get progress indicators
     const progressIndicators = await this.getProgressIndicators(user.employeeNumber, currentPeriod);
@@ -134,40 +125,42 @@ export class MyPerformanceService {
 
     try {
       // Create KPI entity
-      const kpi = new KpiEntity();
-      kpi.type = dto.type;
-      kpi.natureOfWork = dto.natureOfWork;
-      kpi.cascadingMethod = dto.cascadingMethod;
-      kpi.target = dto.targetValue;
-      kpi.targetUnit = dto.targetUnit;
-      kpi.perspective = dto.bscPerspective;
-      kpi.polarity = dto.polarity === 'MAXIMIZE' ? 'POSITIVE' : 'NEGATIVE';
-      kpi.monitoringPeriod = dto.monitoringFrequency || 'MONTHLY';
-      kpi.kpiOwnershipType = 'SPECIFIC';
-      kpi.source = Source.SYSTEM;
-      kpi.itemApprovalStatus = ItemApprovalStatus.DRAFT;
-      kpi.createdByEmployeeNumber = user.employeeNumber;
-      kpi.createdByText = user.employeeName;
-      kpi.isActive = true;
-      kpi.title = dto.title;
-      kpi.description = dto.description;
-      kpi.functionMapping = dto.fromDictionary ? 'DICTIONARY' : null;
-      kpi.cohortMapping = 1; // TODO: Get from position
-      kpi.version = 1;
+      const kpiData: Partial<KpiEntity> = {
+        type: dto.type as any, // Type assertion for enum compatibility
+        natureOfWork: dto.natureOfWork as any,
+        cascadingMethod: dto.cascadingMethod as any,
+        target: dto.targetValue,
+        targetUnit: dto.targetUnit,
+        perspective: dto.bscPerspective,
+        polarity: dto.polarity === 'MAXIMIZE' ? Polarity.POSITIVE : Polarity.NEGATIVE,
+        monitoringPeriod: dto.monitoringFrequency as any || 'MONTHLY',
+        kpiOwnershipType: 'SPECIFIC' as any,
+        source: Source.SYSTEM,
+        itemApprovalStatus: ItemApprovalStatus.DRAFT,
+        createdByEmployeeNumber: user.employeeNumber,
+        createdByText: user.employeeName,
+        isActive: true,
+        title: dto.title,
+        description: dto.description,
+        functionMapping: dto.fromDictionary ? 'DICTIONARY' : undefined,
+        cohortMapping: 1, // TODO: Get from position
+        version: 1,
+      };
 
-      const savedKpi = await queryRunner.manager.save(KpiEntity, kpi);
+      const savedKpi = await this.kpiRepository.create(kpiData);
 
       // Create ownership
-      const ownership = new KpiOwnershipEntity();
-      ownership.kpiId = savedKpi.kpiId;
-      ownership.employeeNumber = user.employeeNumber;
-      ownership.ownershipType = 'OWNER';
-      ownership.weight = dto.weight;
-      ownership.weightApprovalStatus = ItemApprovalStatus.DRAFT;
-      ownership.year = new Date().getFullYear();
-      ownership.version = 1;
+      const ownershipData: Partial<KpiOwnershipEntity> = {
+        kpiId: savedKpi.kpiId,
+        employeeNumber: user.employeeNumber,
+        ownershipType: 'OWNER' as any, // Type assertion for enum compatibility
+        weight: dto.weight,
+        weightApprovalStatus: ItemApprovalStatus.DRAFT as any,
+        year: new Date().getFullYear(),
+        version: 1,
+      };
 
-      await queryRunner.manager.save(KpiOwnershipEntity, ownership);
+      const ownership = await this.kpiRepository.createOwnership(ownershipData);
 
       await queryRunner.commitTransaction();
 
@@ -196,7 +189,11 @@ export class MyPerformanceService {
    * Submit KPI for approval
    */
   async submitKpiForApproval(kpiId: number, user: UserContext): Promise<void> {
-    const kpiWithOwnership = await this.getKpiWithOwnershipCheck(kpiId, user.employeeNumber);
+    const kpiWithOwnership = await this.kpiRepository.findKpiWithOwnershipCheck(kpiId, user.employeeNumber);
+
+    if (!kpiWithOwnership) {
+      throw new NotFoundException('KPI not found or access denied');
+    }
 
     if (!kpiWithOwnership.canEdit) {
       throw new ForbiddenException('You do not have permission to submit this KPI');
@@ -212,7 +209,6 @@ export class MyPerformanceService {
     // Update status
     await this.kpiRepository.update(kpiId, {
       itemApprovalStatus: ItemApprovalStatus.WAITING_FOR_APPROVAL,
-      updatedAt: new Date(),
     });
 
     // TODO: Send notification to approver
@@ -225,7 +221,11 @@ export class MyPerformanceService {
    * Submit KPI realization
    */
   async submitRealization(dto: SubmitRealizationDto, user: UserContext): Promise<void> {
-    const kpiWithOwnership = await this.getKpiWithOwnershipCheck(dto.kpiId, user.employeeNumber);
+    const kpiWithOwnership = await this.kpiRepository.findKpiWithOwnershipCheck(dto.kpiId, user.employeeNumber);
+
+    if (!kpiWithOwnership) {
+      throw new NotFoundException('KPI not found or access denied');
+    }
 
     if (!kpiWithOwnership.canInputRealization) {
       throw new ForbiddenException('You do not have permission to input realization for this KPI');
@@ -245,28 +245,25 @@ export class MyPerformanceService {
 
     try {
       // Create realization record
-      const realization = new KpiRealizationEntity();
-      realization.kpiId = dto.kpiId;
-      realization.employeeNumber = user.employeeNumber;
-      realization.realization = dto.actualValue;
-      realization.notes = dto.notes;
-      realization.source = Source.SYSTEM;
-      realization.submissionStatus = 'SUBMITTED';
-      realization.approvalStatus = 'WAITING_FOR_APPROVAL';
-      realization.generatedDate = new Date();
-      realization.day = dto.week ? null : new Date().getDate();
-      realization.week = dto.week || null;
-      realization.month = dto.month || new Date().getMonth() + 1;
-      realization.year = dto.year;
-      realization.isConcluded = false;
-      realization.version = 1;
+      const realizationData: Partial<KpiRealizationEntity> = {
+        kpiId: dto.kpiId,
+        employeeNumber: user.employeeNumber,
+        realization: dto.actualValue,
+        notes: dto.notes,
+        fileId: dto.evidence.length > 0 ? dto.evidence[0].fileId : undefined,
+        source: Source.SYSTEM,
+        submissionStatus: 'SUBMITTED' as any, // Type assertion for enum compatibility
+        approvalStatus: 'WAITING_FOR_APPROVAL' as any,
+        generatedDate: new Date(),
+        day: dto.week ? undefined : new Date().getDate(),
+        week: dto.week || undefined,
+        month: dto.month || new Date().getMonth() + 1,
+        year: dto.year,
+        isConcluded: false,
+        version: 1,
+      };
 
-      // Attach first evidence file to realization
-      if (dto.evidence.length > 0) {
-        realization.fileId = dto.evidence[0].fileId;
-      }
-
-      const savedRealization = await queryRunner.manager.save(KpiRealizationEntity, realization);
+      const savedRealization = await this.realizationRepository.create(realizationData);
 
       // Create additional evidence records if needed
       // TODO: Implement evidence attachment logic
@@ -292,53 +289,9 @@ export class MyPerformanceService {
    * Get user's KPIs with ownership information
    */
   private async getUserKpisWithOwnership(employeeNumber: string): Promise<KpiWithOwnership[]> {
-    const ownerships = await this.ownershipRepository.find({
-      where: { employeeNumber },
-      relations: ['kpi'],
-    });
-
-    return ownerships.map(ownership => {
-      const isOwner = ownership.ownershipType === 'OWNER';
-      const canEdit = ownership.ownershipType === 'OWNER' &&
-                     ownership.kpi.itemApprovalStatus === ItemApprovalStatus.DRAFT;
-      const canInputRealization = isOwner;
-
-      return {
-        kpi: ownership.kpi,
-        ownership,
-        isOwner,
-        canEdit,
-        canInputRealization,
-      };
-    });
+    return await this.kpiRepository.findUserKpisWithOwnership(employeeNumber);
   }
 
-  /**
-   * Get KPI with ownership validation
-   */
-  private async getKpiWithOwnershipCheck(kpiId: number, employeeNumber: string): Promise<KpiWithOwnership> {
-    const ownership = await this.ownershipRepository.findOne({
-      where: { kpiId, employeeNumber },
-      relations: ['kpi'],
-    });
-
-    if (!ownership) {
-      throw new NotFoundException('KPI not found or access denied');
-    }
-
-    const isOwner = ownership.ownershipType === 'OWNER';
-    const canEdit = ownership.ownershipType === 'OWNER' &&
-                   ownership.kpi.itemApprovalStatus === ItemApprovalStatus.DRAFT;
-    const canInputRealization = isOwner;
-
-    return {
-      kpi: ownership.kpi,
-      ownership,
-      isOwner,
-      canEdit,
-      canInputRealization,
-    };
-  }
 
   /**
    * Calculate user performance scores

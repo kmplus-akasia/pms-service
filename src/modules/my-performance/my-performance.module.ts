@@ -1,11 +1,15 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
 
 // Controllers
 import { MyPerformanceController } from './controllers/my-performance.controller';
 
 // Services
 import { MyPerformanceService } from './services/my-performance.service';
+
+// Repositories
+import { KpiRepository } from './repositories/kpi.repository';
+import { RealizationRepository } from './repositories/realization.repository';
+import { ScoreRepository } from './repositories/score.repository';
 
 // Guards
 import { OwnershipGuard } from './guards/ownership.guard';
@@ -17,13 +21,8 @@ import {
   FileModule,
 } from '../../infrastructure';
 
-// Entities
-import {
-  KpiEntity,
-  KpiOwnershipEntity,
-  KpiRealizationEntity,
-  KpiScoreEntity,
-} from '../../infrastructure/database/entities';
+// Core modules
+import { CoreModule } from '../core/core.module';
 
 @Module({
   imports: [
@@ -32,17 +31,15 @@ import {
     RedisModule,
     FileModule,
 
-    // TypeORM repositories
-    TypeOrmModule.forFeature([
-      KpiEntity,
-      KpiOwnershipEntity,
-      KpiRealizationEntity,
-      KpiScoreEntity,
-    ]),
+    // Core domain modules
+    CoreModule,
   ],
   controllers: [MyPerformanceController],
   providers: [
+    // Services
     MyPerformanceService,
+
+    // Guards
     OwnershipGuard,
   ],
   exports: [

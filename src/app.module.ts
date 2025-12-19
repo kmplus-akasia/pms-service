@@ -12,8 +12,11 @@ import {
   MonitoringModule,
 } from './infrastructure';
 
+// Core modules
+import { CoreModule } from './modules/core';
+
 // Feature modules
-import { AuthModule } from './modules/auth';
+import { AuthModule } from './modules/auth/auth.module';
 import { MyPerformanceModule } from './modules/my-performance';
 
 @Module({
@@ -26,6 +29,9 @@ import { MyPerformanceModule } from './modules/my-performance';
     FileModule,     // File storage operations
     MonitoringModule, // Health checks and monitoring
     AuthModule,     // Authentication and authorization
+
+    // Core domain modules
+    CoreModule,     // Shared repositories for KPI operations
 
     // Feature modules
     MyPerformanceModule,

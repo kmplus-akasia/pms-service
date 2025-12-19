@@ -23,7 +23,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'fallback-secret-key',
       signOptions: {
-        expiresIn: process.env.JWT_EXPIRES_IN || '24h',
+        expiresIn: Number(process.env.JWT_EXPIRES_IN) || 24 * 60 * 60,
       },
     }),
   ],
