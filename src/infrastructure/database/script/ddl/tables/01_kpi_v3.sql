@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS kpi_v3 (
-  kpi_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  parent_kpi_id BIGINT UNSIGNED,
+  kpi_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  parent_kpi_id BIGINT,
 
   type ENUM('IMPACT','OUTPUT','KAI') NOT NULL,
   nature_of_work ENUM('STATIC','PROGRESSING'),
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS kpi_v3 (
   monitoring_period ENUM('DAILY','WEEKLY','MONTHLY','QUARTERLY') NOT NULL,
   kpi_ownership_type ENUM('SPECIFIC','SHARED','COMMON'),
 
-  kpi_for_group_id BIGINT UNSIGNED,
+  kpi_for_group_id BIGINT,
   source ENUM('SYSTEM','MIGRATION') DEFAULT 'SYSTEM',
 
   item_approval_status ENUM(
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS kpi_v3 (
   item_approver_text TEXT,
   item_approver_notes TEXT,
 
-  kpi_dictionary_id BIGINT UNSIGNED,
+  kpi_dictionary_id BIGINT,
 
   created_by_employee_number VARCHAR(50),
   created_by_text TEXT,

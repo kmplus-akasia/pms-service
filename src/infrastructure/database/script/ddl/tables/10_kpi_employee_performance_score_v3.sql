@@ -34,5 +34,5 @@ CREATE TABLE IF NOT EXISTS kpi_employee_performance_score_v3 (
     FOREIGN KEY (employee_number) REFERENCES tb_employee(employee_number),
 
   INDEX idx_perf_employee (employee_number),
-  INDEX idx_perf_cohort_formula (cohort_kpi_formula_id),
+  INDEX idx_perf_cohort_formula (cohort_kpi_formula_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

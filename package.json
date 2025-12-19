@@ -18,10 +18,10 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "db:migrate": "node src/database/script/ddl/index.js",
-    "db:migrate:dry": "node src/database/script/ddl/index.js --dry-run",
-    "db:migrate:force": "node src/database/script/ddl/index.js --force",
-    "db:migrate:help": "node src/database/script/ddl/index.js --help"
+    "db:migrate": "node src/infrastructure/database/script/ddl/index.js",
+    "db:migrate:dry": "node src/infrastructure/database/script/ddl/index.js --dry-run",
+    "db:migrate:force": "node src/infrastructure/database/script/ddl/index.js --force",
+    "db:migrate:help": "node src/infrastructure/database/script/ddl/index.js --help"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

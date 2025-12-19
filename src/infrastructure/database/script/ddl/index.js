@@ -29,6 +29,9 @@
 const mysql = require('mysql2/promise');
 const fs = require('fs');
 const path = require('path');
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 // Configuration
 const DB_CONFIG = {

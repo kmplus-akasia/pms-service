@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS kpi_ownership_v3 (
   kpi_id BIGINT NOT NULL,
 
   employee_number VARCHAR(50),
-  position_master_variant_id BIGINT,
+  position_master_variant_id INT,
 
   ownership_type ENUM('OWNER','SHARED_OWNER','COLLABORATOR') NOT NULL,
   weight FLOAT,
@@ -36,5 +36,5 @@ CREATE TABLE IF NOT EXISTS kpi_ownership_v3 (
     FOREIGN KEY (weight_approver_employee_number) REFERENCES tb_employee(employee_number),
 
   CONSTRAINT fk_kpi_ownership_position_master_variant
-    FOREIGN KEY (position_master_variant_id) REFERENCES tb_position_master_variant(position_master_variant_id),
+    FOREIGN KEY (position_master_variant_id) REFERENCES tb_position_master_variant(position_master_variant_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS kpi_ownership_log_v3 (
   kpi_id BIGINT NOT NULL,
 
   employee_number VARCHAR(50),
-  position_master_variant_id BIGINT,
+  position_master_variant_id INT,
 
   ownership_type ENUM('OWNER','SHARED_OWNER','COLLABORATOR') NOT NULL,
   weight FLOAT,

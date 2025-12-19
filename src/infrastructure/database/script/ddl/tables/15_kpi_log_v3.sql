@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS kpi_log_v3 (
   kpi_id BIGINT NOT NULL,
   log_notes TEXT,
 
-  parent_kpi_id BIGINT UNSIGNED,
+  parent_kpi_id BIGINT,
 
   type ENUM('IMPACT','OUTPUT','KAI') NOT NULL,
   nature_of_work ENUM('STATIC','PROGRESSING'),

@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS kpi_realization_log_v3 (
   notes TEXT,
 
   realization FLOAT,
-  file_id BIGINT,
+  file_id INT,
 
   source ENUM('SYSTEM','MIGRATION') DEFAULT 'SYSTEM',
   submission_status ENUM('NOT_SUBMITTED','SUBMITTED'),
@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS kpi_realization_log_v3 (
     FOREIGN KEY (approver_employee_number) REFERENCES tb_employee(employee_number),
   
   CONSTRAINT fk_kpi_realization_log_file
-    FOREIGN KEY (file_id) REFERENCES file(file_id),
+    FOREIGN KEY (file_id) REFERENCES tb_file(file_id),
 
   INDEX idx_kpi_realization_log_employee (employee_number),
   INDEX idx_kpi_realization_log_approver (approver_employee_number),

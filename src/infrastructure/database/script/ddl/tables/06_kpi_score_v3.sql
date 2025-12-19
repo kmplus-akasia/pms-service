@@ -26,5 +26,5 @@ CREATE TABLE IF NOT EXISTS kpi_score_v3 (
     FOREIGN KEY (employee_number) REFERENCES tb_employee(employee_number),
 
   INDEX idx_kpi_score_employee (employee_number),
-  INDEX idx_kpi_score_kpi (kpi_id),
+  INDEX idx_kpi_score_kpi (kpi_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

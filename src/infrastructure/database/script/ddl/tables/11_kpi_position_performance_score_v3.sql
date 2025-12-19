@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS kpi_position_performance_score_v3 (
   kpi_position_performance_score_id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  position_master_variant_id BIGINT NOT NULL,
+  position_master_variant_id INT NOT NULL,
 
   final_score FLOAT,
   kpi_score FLOAT,
@@ -34,5 +34,5 @@ CREATE TABLE IF NOT EXISTS kpi_position_performance_score_v3 (
     FOREIGN KEY (position_master_variant_id) REFERENCES tb_position_master_variant(position_master_variant_id),
 
   INDEX idx_pos_perf_position_master_variant (position_master_variant_id),
-  INDEX idx_pos_perf_cohort_formula (cohort_kpi_formula_id),
+  INDEX idx_pos_perf_cohort_formula (cohort_kpi_formula_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
