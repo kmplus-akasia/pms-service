@@ -210,9 +210,7 @@ pms-service/
 │   │   ├── auth/            # Authentication & authorization
 │   │   │   ├── dto/
 │   │   │   ├── strategies/
-│   │   │   ├── guards/
-│   │   │   ├── auth.service.ts
-│   │   │   └── auth.module.ts
+│   │   │   └── guards/
 │   │   ├── calendar/        # Performance calendar
 │   │   ├── dictionary/      # KPI dictionary module
 │   │   ├── kpi/             # KPI management
