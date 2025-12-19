@@ -151,7 +151,7 @@ Performance Score = 100% from KPIs only
 - **Build**: NestJS CLI
 - **Linting**: ESLint + Prettier
 - **Testing**: Jest
-- **Documentation**: OpenAPI/Swagger
+- **Documentation**: OpenAPI/Swagger (accessible at `/api`)
 
 ### Key Dependencies
 
@@ -175,20 +175,53 @@ pms-service/
 │   │   ├── filters/          # Exception filters
 │   │   ├── guards/           # Authentication guards
 │   │   ├── interceptors/     # Request interceptors
-│   │   └── pipes/            # Validation pipes
+│   │   ├── pipes/            # Validation pipes
+│   │   ├── interfaces/       # Shared TypeScript interfaces
+│   │   ├── types/           # TypeScript type definitions
+│   │   └── utils/           # Utility functions
 │   ├── config/               # Configuration modules
 │   ├── database/             # Database related
-│   │   ├── entities/         # TypeORM entities
-│   │   ├── migrations/       # Database migrations
+│   │   ├── entities/         # TypeORM entities (planned)
+│   │   ├── migrations/       # Database migrations (planned)
 │   │   └── script/
 │   │       └── ddl/
+│   │           ├── indexes/  # Performance indexes
 │   │           └── tables/   # SQL table definitions
+│   ├── infrastructure/       # Infrastructure layer
+│   │   ├── cache/           # Redis operations
+│   │   │   ├── redis.service.ts
+│   │   │   ├── redis.module.ts
+│   │   │   └── interfaces/
+│   │   ├── queue/           # RabbitMQ operations
+│   │   │   ├── rabbitmq.service.ts
+│   │   │   ├── rabbitmq.module.ts
+│   │   │   └── interfaces/
+│   │   ├── database/        # Database connections
+│   │   │   ├── mysql.service.ts
+│   │   │   ├── mysql.module.ts
+│   │   │   └── migrations/
+│   │   ├── file-storage/    # External file operations
+│   │   │   ├── file.service.ts
+│   │   │   └── interfaces/
+│   │   └── monitoring/      # Observability
+│   │       ├── metrics.service.ts
+│   │       └── health.controller.ts
 │   ├── modules/              # Feature modules
-│   │   ├── auth/            # Authentication module
+│   │   ├── auth/            # Authentication & authorization
+│   │   │   ├── dto/
+│   │   │   ├── strategies/
+│   │   │   ├── guards/
+│   │   │   ├── auth.service.ts
+│   │   │   └── auth.module.ts
 │   │   ├── calendar/        # Performance calendar
 │   │   ├── dictionary/      # KPI dictionary module
 │   │   ├── kpi/             # KPI management
 │   │   ├── my-performance/  # Individual performance
+│   │   │   ├── dto/
+│   │   │   ├── services/
+│   │   │   ├── controllers/
+│   │   │   ├── guards/
+│   │   │   └── my-performance.module.ts
 │   │   ├── performance-tree/ # KPI hierarchy
 │   │   └── team/            # Team management
 │   ├── app.controller.ts    # Main application controller
@@ -197,7 +230,17 @@ pms-service/
 │   └── main.ts              # Application entry point
 ├── docs/
 │   └── prd/                 # Product Requirements Documents
+│       ├── PEL-004-PMS-BRD.md
+│       ├── part-1-my-performance.md
+│       ├── part-2-my-team-performance.md
+│       ├── part-3-kpi-dictionary.md
+│       ├── part-4-performance-tree.md
+│       ├── part-5-performance-hq.md
+│       ├── backend-guideline.md     # 📋 THIS DOCUMENT
+│       └── monitoring-planning.md
 ├── test/                    # Test files
+│   ├── integration/         # Integration tests
+│   └── e2e/                 # End-to-end tests
 ├── package.json
 ├── tsconfig.json
 ├── nest-cli.json
@@ -325,9 +368,19 @@ npm run format            # Format code with Prettier
 
 ## 📚 API Documentation
 
+### Swagger/OpenAPI
+
+When the application is running, comprehensive API documentation is available at:
+
+- **URL**: `http://localhost:3000/api`
+- **Features**: Interactive API testing, schema validation, authentication
+- **Tags**: Organized by modules (auth, my-performance, team, kpi, etc.)
+- **Authentication**: Cookie-based (`smartkmsystemAuth`)
+
 ### Authentication
 
-- JWT-based authentication
+- JWT-based authentication (via cookies)
+- Cookie name: `smartkmsystemAuth`
 - Role-based access control (RBAC)
 - Employee number as primary identifier
 
@@ -511,7 +564,8 @@ DB_DATABASE=pms_db         # Database name
 ## 📞 Support
 
 - **Business Requirements**: Refer to `docs/prd/PEL-004-PMS-BRD.md`
-- **API Documentation**: Generated via Swagger/OpenAPI
+- **Backend Guidelines**: 📋 `docs/prd/backend-guideline.md` (Living Document)
+- **API Documentation**: Live at `/api` (Swagger/OpenAPI)
 - **Database Schema**: `src/database/script/ddl/tables/README.md`
 - **Migration Script**: `src/database/script/ddl/index.js`
 - **Mock Data**: Available in `docs/prd/` for testing
