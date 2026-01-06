@@ -91,6 +91,9 @@ const MIGRATION_FILES = [
   '13_kpi_position_performance_score_final_v3.sql',
   '14_kpi_schedule_v3.sql',
   '15_kpi_log_v3.sql',
+  '16_position_kpi_history_log.sql',
+  '17_portfolio_change_request.sql',
+  '18_portfolio_change_item.sql',
 ];
 
 // Performance indexes (run after tables)
@@ -291,12 +294,19 @@ async function dropExistingTables(connection) {
 
   warn('Force mode enabled - dropping existing tables...');
 
-  const dropStatements = MIGRATION_FILES.map(file => {
-    const tableName = file.replace('.sql', '').replace(/^\d+_/, '');
-    return `DROP TABLE IF EXISTS ${tableName};`;
-  }).join('\n');
+  // const dropStatements = MIGRATION_FILES.map(file => {
+  //   const tableName = file.replace('.sql', '').replace(/^\d+_/, '');
+  //   return `DROP TABLE IF EXISTS ${tableName};`;
+  // }).join('\n');
 
-  return await executeSql(connection, dropStatements, 'Drop existing tables');
+  // * Do the drop one by one, in reverse order
+  for (const file of [...MIGRATION_FILES].reverse()) {
+    const tableName = file.replace('.sql', '').replace(/^\d+_/, '');
+    await connection.execute(`DROP TABLE IF EXISTS ${tableName};`);
+    success(`Dropped table: ${tableName}`);
+  }
+
+  return true;
 }
 
 /**
@@ -362,7 +372,7 @@ async function runValidationChecks(connection) {
       name: 'Table count check',
       query: 'SELECT COUNT(*) as count FROM information_schema.TABLES WHERE TABLE_SCHEMA = ?',
       expected: MIGRATION_FILES.length,
-      description: `Should have ${MIGRATION_FILES.length} tables`
+      description: `Should have at least ${MIGRATION_FILES.length} tables`
     },
     {
       name: 'Required tables exist',
@@ -370,10 +380,11 @@ async function runValidationChecks(connection) {
         SELECT COUNT(*) as count FROM information_schema.TABLES
         WHERE TABLE_SCHEMA = ? AND TABLE_NAME IN (
           'kpi_v3', 'kpi_ownership_v3', 'kpi_realization_v3', 'kpi_score_v3',
-          'position_cohort', 'cohort_kpi_formula', 'kpi_schedule_v3'
+          'position_cohort', 'cohort_kpi_formula', 'kpi_schedule_v3',
+          'position_kpi_history_log', 'portfolio_change_request', 'portfolio_change_item'
         )
       `,
-      expected: 7,
+      expected: 10,
       description: 'Core tables should exist'
     }
   ];

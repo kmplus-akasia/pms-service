@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS kpi_v3 (
   kpi_id BIGINT AUTO_INCREMENT PRIMARY KEY,
   parent_kpi_id BIGINT,
 
-  type ENUM('IMPACT','OUTPUT','KAI') NOT NULL,
+  type ENUM('IMPACT','SUB_IMPACT','OUTPUT','KAI') NOT NULL,
   nature_of_work ENUM('STATIC','PROGRESSING'),
   cascading_method ENUM('DIRECT','INDIRECT'),
   formula TEXT,
@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS kpi_v3 (
   kpi_ownership_type ENUM('SPECIFIC','SHARED','COMMON'),
 
   kpi_for_group_id BIGINT,
-  source ENUM('SYSTEM','MIGRATION') DEFAULT 'SYSTEM',
+  source ENUM('SYSTEM','MIGRATION', 'MANUAL', 'DICTIONARY') DEFAULT 'SYSTEM',
 
   item_approval_status ENUM(
     'DRAFT','WAITING_FOR_APPROVAL','REJECTED','READY','APPROVED'
@@ -35,6 +35,11 @@ CREATE TABLE IF NOT EXISTS kpi_v3 (
   title TEXT,
   description TEXT,
   reference_requirement TEXT,
+
+  status ENUM('ACTIVE','INVALID','ARCHIVED') DEFAULT 'ACTIVE',
+  orphan_reason TEXT,
+  is_customized TINYINT(1) NOT NULL DEFAULT 0,
+  evidence_requirement TEXT,
 
   function_mapping TEXT,
   cohort_mapping INT,
