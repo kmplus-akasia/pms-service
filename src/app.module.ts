@@ -19,6 +19,7 @@ import { CoreModule } from './modules/core';
 // Feature modules
 import { AuthModule } from './modules/auth/auth.module';
 import { MyPerformanceModule } from './modules/my-performance';
+import { MyTeamPerformanceModule } from './modules/team/my-team-performance.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { MyPerformanceModule } from './modules/my-performance';
 
     // Feature modules
     MyPerformanceModule,
+    MyTeamPerformanceModule,
   ],
   controllers: [AppController],
   providers: [AppService],
