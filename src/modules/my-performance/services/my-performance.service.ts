@@ -11,6 +11,9 @@ import {
   type KpiWithOwnership,
   RealizationRepository,
   ScoreRepository,
+  EmployeePerformanceScoreRepository,
+  EmployeePerformanceScoreFinalRepository,
+  CohortKpiFormulaRepository,
 } from '../../core/kpi/repositories';
 
 // Entities
@@ -47,6 +50,9 @@ export class MyPerformanceService {
     private readonly kpiRepository: KpiRepository,
     private readonly realizationRepository: RealizationRepository,
     private readonly scoreRepository: ScoreRepository,
+    private readonly employeePerformanceScoreRepository: EmployeePerformanceScoreRepository,
+    private readonly employeePerformanceScoreFinalRepository: EmployeePerformanceScoreFinalRepository,
+    private readonly cohortKpiFormulaRepository: CohortKpiFormulaRepository,
     private readonly dataSource: DataSource,
     private readonly redisService: RedisService,
     private readonly fileService: FileService,
@@ -296,15 +302,47 @@ export class MyPerformanceService {
    * Calculate user performance scores
    */
   private async calculateUserScores(employeeNumber: string, period: string): Promise<any> {
-    // TODO: Implement score calculation logic
-    // This would involve aggregating KPI scores by type and calculating weighted averages
+    try {
+      // Parse period (format: "2026-01")
+      const [yearStr, monthStr] = period.split('-');
+      const year = parseInt(yearStr);
+      const month = parseInt(monthStr);
 
-    return {
-      impactScore: 85.5,
-      outputScore: 78.2,
-      kaiScore: 92.1,
-      finalScore: 83.6,
-    };
+      // Get the latest performance score for this employee and period
+      const performanceScores = await this.employeePerformanceScoreRepository.findWithFilters({
+        employeeNumber,
+        year,
+        month,
+      });
+
+      if (performanceScores.length > 0) {
+        const latestScore = performanceScores[0]; // Already ordered by date desc
+        return {
+          impactScore: latestScore.impactScore || 0,
+          outputScore: latestScore.outputScore || 0,
+          kaiScore: latestScore.kpiScore || 0, // Using kpiScore as KAI score for now
+          finalScore: latestScore.finalScore || 0,
+        };
+      }
+
+      // If no scores found, return default values
+      // TODO: This could trigger score calculation if needed
+      return {
+        impactScore: 0,
+        outputScore: 0,
+        kaiScore: 0,
+        finalScore: 0,
+      };
+    } catch (error) {
+      this.logger.error(`Failed to calculate user scores for ${employeeNumber}`, error);
+      // Return default values on error
+      return {
+        impactScore: 0,
+        outputScore: 0,
+        kaiScore: 0,
+        finalScore: 0,
+      };
+    }
   }
 
   /**
@@ -353,30 +391,78 @@ export class MyPerformanceService {
    * Get progress indicators
    */
   private async getProgressIndicators(employeeNumber: string, period: string): Promise<any[]> {
-    // TODO: Implement progress calculation logic
-    return [
-      {
-        type: 'IMPACT',
-        achievement: 85.5,
-        target: 100,
-        current: 85.5,
-        color: 'success',
-      },
-      {
-        type: 'OUTPUT',
-        achievement: 78.2,
-        target: 100,
-        current: 78.2,
-        color: 'warning',
-      },
-      {
-        type: 'KAI',
-        achievement: 92.1,
-        target: 100,
-        current: 92.1,
-        color: 'success',
-      },
-    ];
+    try {
+      // Parse period
+      const [yearStr, monthStr] = period.split('-');
+      const year = parseInt(yearStr);
+      const month = parseInt(monthStr);
+
+      // Get performance scores for this period
+      const performanceScores = await this.employeePerformanceScoreRepository.findWithFilters({
+        employeeNumber,
+        year,
+        month,
+      });
+
+      const indicators: any[] = [];
+
+      if (performanceScores.length > 0) {
+        const score = performanceScores[0];
+
+        // Impact score indicator
+        indicators.push({
+          type: 'IMPACT',
+          achievement: score.impactScore || 0,
+          target: 100, // Standard target
+          current: score.impactScore || 0,
+          color: this.getScoreColor(score.impactScore || 0),
+        });
+
+        // Output score indicator
+        indicators.push({
+          type: 'OUTPUT',
+          achievement: score.outputScore || 0,
+          target: 100,
+          current: score.outputScore || 0,
+          color: this.getScoreColor(score.outputScore || 0),
+        });
+
+        // KAI score indicator
+        indicators.push({
+          type: 'KAI',
+          achievement: score.kpiScore || 0,
+          target: 100,
+          current: score.kpiScore || 0,
+          color: this.getScoreColor(score.kpiScore || 0),
+        });
+      } else {
+        // Default indicators when no scores are available
+        indicators.push(
+          { type: 'IMPACT', achievement: 0, target: 100, current: 0, color: 'info' },
+          { type: 'OUTPUT', achievement: 0, target: 100, current: 0, color: 'info' },
+          { type: 'KAI', achievement: 0, target: 100, current: 0, color: 'info' }
+        );
+      }
+
+      return indicators;
+    } catch (error) {
+      this.logger.error(`Failed to get progress indicators for ${employeeNumber}`, error);
+      // Return default indicators on error
+      return [
+        { type: 'IMPACT', achievement: 0, target: 100, current: 0, color: 'info' },
+        { type: 'OUTPUT', achievement: 0, target: 100, current: 0, color: 'info' },
+        { type: 'KAI', achievement: 0, target: 100, current: 0, color: 'info' }
+      ];
+    }
+  }
+
+  /**
+   * Get color indicator based on score
+   */
+  private getScoreColor(score: number): string {
+    if (score >= 90) return 'success';
+    if (score >= 75) return 'warning';
+    return 'danger';
   }
 
   /**
@@ -453,8 +539,136 @@ export class MyPerformanceService {
    * Recalculate KPI score after realization submission
    */
   private async recalculateKpiScore(kpiId: number, employeeNumber: string, month: number, year: number): Promise<void> {
-    // TODO: Implement score recalculation logic
-    // This would calculate achievement percentage and weighted score
+    try {
+      // First, ensure individual KPI score is calculated/updated
+      await this.calculateIndividualKpiScore(kpiId, employeeNumber, month, year);
+
+      // Then trigger aggregate performance score recalculation
+      await this.recalculateEmployeePerformanceScore(employeeNumber, year, month);
+
+      this.logger.log(`Score recalculation completed for KPI ${kpiId}, employee ${employeeNumber}`);
+    } catch (error) {
+      this.logger.error(`Failed to recalculate scores for KPI ${kpiId}`, error);
+      // Don't throw error to avoid breaking the realization submission flow
+    }
+  }
+
+  /**
+   * Calculate individual KPI score
+   */
+  private async calculateIndividualKpiScore(kpiId: number, employeeNumber: string, month: number, year: number): Promise<void> {
+    // This would use the existing ScoreRepository.calculateAndSaveScore method
+    // TODO: Get KPI realization data and calculate score
+    // For now, this is a placeholder
+  }
+
+  /**
+   * Recalculate aggregate employee performance score
+   */
+  private async recalculateEmployeePerformanceScore(employeeNumber: string, year: number, month: number): Promise<void> {
+    try {
+      // Get all KPI scores for this employee in the period
+      const kpiScores = await this.scoreRepository.findWithFilters({
+        employeeNumber,
+        year,
+        month,
+      });
+
+      if (kpiScores.length === 0) {
+        this.logger.warn(`No KPI scores found for ${employeeNumber} in ${year}-${month}`);
+        return;
+      }
+
+      // Group scores by KPI type
+      const impactScores = kpiScores.filter(score => score.kpi?.type === 'IMPACT');
+      const outputScores = kpiScores.filter(score => score.kpi?.type === 'OUTPUT');
+      const kaiScores = kpiScores.filter(score => score.kpi?.type === 'KAI');
+
+      // Calculate weighted averages for each type
+      const impactScore = this.calculateWeightedAverage(impactScores);
+      const outputScore = this.calculateWeightedAverage(outputScores);
+      const kpiScore = this.calculateWeightedAverage(kaiScores);
+
+      // Get the cohort formula for this employee
+      // TODO: Get employee's cohort ID from position mapping
+      const cohortId = await this.getEmployeeCohortId(employeeNumber);
+      const formula = await this.cohortKpiFormulaRepository.getLatestFormulaForCohort(cohortId);
+
+      let finalScore: number;
+      let weights: { kpiWeight: number; outputWeight: number; impactWeight: number };
+
+      if (formula) {
+        // Use formula weights
+        weights = {
+          kpiWeight: formula.kpiScoreWeight || 0,
+          outputWeight: formula.outputScoreWeight || 0,
+          impactWeight: formula.impactScoreWeight || 0,
+        };
+
+        // Calculate weighted final score
+        finalScore = (
+          (kpiScore * weights.kpiWeight) +
+          (outputScore * weights.outputWeight) +
+          (impactScore * weights.impactWeight)
+        ) / 100; // Weights are in percentages
+      } else {
+        // Fallback to equal weights
+        weights = { kpiWeight: 33.33, outputWeight: 33.33, impactWeight: 33.34 };
+        finalScore = (impactScore + outputScore + kpiScore) / 3;
+      }
+
+      // Save or update the aggregate performance score
+      await this.employeePerformanceScoreRepository.calculateAndSaveScore(
+        employeeNumber,
+        year,
+        month,
+        formula?.cohortKpiFormulaId || 1, // Use formula ID or default
+        {
+          finalScore,
+          kpiScore,
+          outputScore,
+          impactScore,
+          boundaryScore: 0, // TODO: Calculate boundary score based on business rules
+          kpiScoreWeight: weights.kpiWeight,
+          outputScoreWeight: weights.outputWeight,
+          impactScoreWeight: weights.impactWeight,
+          kpiKpiIds: kaiScores.map(s => s.kpiId.toString()).join(','),
+          outputKpiIds: outputScores.map(s => s.kpiId.toString()).join(','),
+          impactKpiIds: impactScores.map(s => s.kpiId.toString()).join(','),
+        }
+      );
+
+      this.logger.log(`Aggregate performance score calculated for ${employeeNumber}: ${finalScore}`);
+    } catch (error) {
+      this.logger.error(`Failed to recalculate employee performance score for ${employeeNumber}`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get employee's cohort ID
+   * TODO: Implement proper cohort mapping based on position
+   */
+  private async getEmployeeCohortId(employeeNumber: string): Promise<number> {
+    // Placeholder - should get from employee position mapping
+    // For now, return a default cohort ID
+    return 1;
+  }
+
+  /**
+   * Calculate weighted average of scores
+   */
+  private calculateWeightedAverage(scores: any[]): number {
+    if (scores.length === 0) return 0;
+
+    const totalWeight = scores.reduce((sum, score) => sum + (score.weight || 0), 0);
+    if (totalWeight === 0) return 0;
+
+    const weightedSum = scores.reduce((sum, score) =>
+      sum + ((score.score || 0) * (score.weight || 0)), 0
+    );
+
+    return weightedSum / totalWeight;
   }
 
   /**

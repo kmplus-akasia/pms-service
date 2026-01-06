@@ -7,12 +7,18 @@ import {
   KpiOwnershipEntity,
   KpiRealizationEntity,
   KpiScoreEntity,
+  KpiEmployeePerformanceScoreEntity,
+  KpiEmployeePerformanceScoreFinalEntity,
+  CohortKpiFormulaEntity,
 } from '../../../infrastructure/database/entities';
 
 // Repositories
 import { KpiRepository } from './repositories/kpi.repository';
 import { RealizationRepository } from './repositories/realization.repository';
 import { ScoreRepository } from './repositories/score.repository';
+import { EmployeePerformanceScoreRepository } from './repositories/employee-performance-score.repository';
+import { EmployeePerformanceScoreFinalRepository } from './repositories/employee-performance-score-final.repository';
+import { CohortKpiFormulaRepository } from './repositories/cohort-kpi-formula.repository';
 
 @Module({
   imports: [
@@ -22,6 +28,9 @@ import { ScoreRepository } from './repositories/score.repository';
       KpiOwnershipEntity,
       KpiRealizationEntity,
       KpiScoreEntity,
+      KpiEmployeePerformanceScoreEntity,
+      KpiEmployeePerformanceScoreFinalEntity,
+      CohortKpiFormulaEntity,
     ]),
   ],
   providers: [
@@ -29,12 +38,18 @@ import { ScoreRepository } from './repositories/score.repository';
     KpiRepository,
     RealizationRepository,
     ScoreRepository,
+    EmployeePerformanceScoreRepository,
+    EmployeePerformanceScoreFinalRepository,
+    CohortKpiFormulaRepository,
   ],
   exports: [
     // Export repositories for use in other modules
     KpiRepository,
     RealizationRepository,
     ScoreRepository,
+    EmployeePerformanceScoreRepository,
+    EmployeePerformanceScoreFinalRepository,
+    CohortKpiFormulaRepository,
 
     // Export TypeORM repositories if needed
     TypeOrmModule,
