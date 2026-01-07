@@ -19,6 +19,10 @@ import {
   WeightApprovalStatus,
 } from '../../../infrastructure/database/entities/kpi-ownership.entity';
 
+// Import utilities
+import { dateToTwFilter } from '../../../lib/dateToTwFilter';
+import { MysqlService } from '../../../infrastructure/database/mysql.service';
+
 // Import service
 import { PkpiService } from './pkpi.service';
 
@@ -59,7 +63,10 @@ export interface PreparedKpiData {
 export class PkpiIntegrationService {
   private readonly logger = new Logger(PkpiIntegrationService.name);
 
-  constructor(private readonly pkpiService: PkpiService) {}
+  constructor(
+    private readonly pkpiService: PkpiService,
+    private readonly mysqlService: MysqlService,
+  ) {}
 
   // Regional and Subholding mappings
   private readonly REGIONAL_MAP = {
@@ -356,8 +363,6 @@ export class PkpiIntegrationService {
   }> {
     this.logger.log(`Starting PKPI data preparation for period ${periode}, year ${year}`);
 
-    // TODO: Implement position variants query logic
-    // For now, we'll simulate the structure
     const positionVariants = await this.getPositionVariants(periode, year);
 
     let groupsPositionVariants = positionVariants.filter((pv) => {
@@ -458,7 +463,7 @@ export class PkpiIntegrationService {
       this.logger.log('=== Fetching getKPIByGroup');
       try {
         const response = await this.pkpiService.getKPIByGroup(groupIds, year, parseInt(periode) || 1);
-        resultPKPIGroup = response.data?.data?.data || {};
+        resultPKPIGroup = response.data?.data || {};
       } catch (error) {
         this.logger.error('Error fetching group KPIs:', error);
       }
@@ -489,7 +494,7 @@ export class PkpiIntegrationService {
         );
 
         const formattedResult = {};
-        const temp = response.data?.data?.data;
+        const temp = response.data?.data || {};
         if (temp) {
           for (const key in temp) {
             formattedResult[`${parentCode}-${key}`] = temp[key];
@@ -526,7 +531,7 @@ export class PkpiIntegrationService {
         );
 
         const formattedResult = {};
-        const temp = response.data?.data?.data;
+        const temp = response.data?.data || {};
         if (temp) {
           for (const key in temp) {
             formattedResult[`${parentCode}-${key}`] = temp[key];
@@ -673,10 +678,35 @@ export class PkpiIntegrationService {
    * Get position variants (placeholder - needs actual implementation)
    */
   private async getPositionVariants(periode: string, year: number): Promise<any[]> {
-    // TODO: Implement actual query to get position variants
-    // This should replicate the SQL query from the original file
-    this.logger.warn('getPositionVariants not implemented - returning empty array');
-    return [];
+    // SQL query to get position master variant IDs for the selected group code, period, and year
+    // This query joins multiple tables to retrieve the necessary information
+    const query = `
+    -- get positionMasterVariantId running on selected groupCode periode and year
+    SELECT
+        tgm.p_kpi_group_code,
+        tgm.group_master_id,
+        tpmv.position_master_variant_id
+    FROM tb_position_master_variant tpmv
+    LEFT JOIN tb_position_master_v2 tpm ON tpm.position_master_id = tpmv.position_master_id AND tpm.deletedAt IS NULL
+    AND ${dateToTwFilter.query({
+        tbAlias: "tpm",
+    })}
+    LEFT JOIN tb_position_master_organization_sync tpmos ON tpmos.position_master_id = tpm.position_master_id AND tpmos.deletedAt IS NULL
+    AND ${dateToTwFilter.query({
+        tbAlias: "tpmos",
+    })}
+    LEFT JOIN tb_group_master tgm ON tgm.group_master_id = tpmos.organization_master_id AND tgm.deletedAt IS NULL
+    AND ${dateToTwFilter.query({
+        tbAlias: "tgm",
+    })}
+    WHERE tpmv.deletedAt IS NULL
+    AND tpm.position_master_type_id = 5
+    AND tgm.group_master_id IS NOT NULL
+    AND tgm.p_kpi_group_code IS NOT NULL
+    `;
+
+    const positionVariants = await this.mysqlService.query<any>(query, {periode, year});
+    return positionVariants;
   }
 
   /**

@@ -11,6 +11,7 @@ export interface DatabaseConfig {
   connectionLimit: number;
   acquireTimeoutMillis?: number;
   timeout?: number;
+  namedPlaceholders?: boolean;
 }
 
 @Injectable()
@@ -40,6 +41,7 @@ export class MysqlService implements OnModuleInit, OnModuleDestroy {
       database: this.configService.get('DB_DATABASE') || '',
       connectionLimit: parseInt(this.configService.get('DB_CONNECTION_LIMIT') || '10', 10),
       acquireTimeoutMillis: 60000,
+      namedPlaceholders: true,
     };
 
     if (!config.user || !config.password || !config.database) {
@@ -80,7 +82,7 @@ export class MysqlService implements OnModuleInit, OnModuleDestroy {
   /**
    * Execute a SELECT query
    */
-  async query<T = any>(sql: string, params: any[] = []): Promise<T[]> {
+  async query<T = any>(sql: string, params: any = []): Promise<T[]> {
     if (!this.isConnected) {
       throw new Error('Database connection not available');
     }
