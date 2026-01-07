@@ -1,4 +1,5 @@
 import { startDateEndDateFilter } from '../../../../lib/startDateEndDateFilter';
+// import * as fs from 'fs';
 
 interface SuperiorPositionQueryParams {
   queryFilter?: string;
@@ -9,22 +10,28 @@ interface SuperiorPositionQueryParams {
 export class SuperiorEmployeePositionMasterRepository {
   static query({ queryFilter, additionalData, additionalJoin }: SuperiorPositionQueryParams): string {
     const query = `
-    SELECT
-      tpm.position_master_id position_master_id,
-      CASE
-        WHEN tpm.position_master_id = tpmv_gh.position_master_id THEN te_parent.employee_number
-        ELSE tepms.employee_number
-      END AS employee_number,
-      -- (start) case when position_master_id are group head
-      CASE
-        WHEN tpm.position_master_id = tpmv_gh.position_master_id THEN tpmv_parent.position_master_id
-        ELSE tpmv_gh.position_master_id
-      END AS superior_position_master_id,
-      CASE
-        WHEN tpm.position_master_id = tpmv_gh.position_master_id THEN tpmv_parent.position_master_variant_id
-        ELSE tpmv_gh.position_master_variant_id
-      END AS superior_position_master_variant_id
-      -- (end) case when position_master_id are group head
+        SELECT
+        CASE
+          WHEN tpm.position_master_id = tpmv_gh.position_master_id THEN tpmv_parent.position_master_id
+          ELSE tpmv_gh.position_master_id
+        END AS position_master_id,
+        CASE
+          WHEN tpm.position_master_id = tpmv_gh.position_master_id THEN tpmv_parent.position_master_variant_id
+          ELSE tpmv_gh.position_master_variant_id
+        END AS position_master_variant_id,
+        CASE
+          WHEN tpm.position_master_id = tpmv_gh.position_master_id THEN te_parent.employee_number
+          ELSE tepms.employee_number
+        END AS employee_number,
+        CASE
+          WHEN tpm.position_master_id = tpmv_gh.position_master_id THEN te_parent.firstname
+          ELSE te.firstname
+        END AS employee_name,
+        CASE
+          WHEN tpm.position_master_id = tpmv_gh.position_master_id THEN tpm_parent.name
+          ELSE tpm_gh.name
+        END AS position_name
+        -- (end) case when position_master_id are group head
       ${additionalData?.length ? `, ${additionalData.join(", ")}` : ""}
     FROM tb_position_master_v2 tpm
     LEFT JOIN tb_position_master_organization_sync tpmos ON tpmos.position_master_id = tpm.position_master_id
@@ -37,6 +44,8 @@ export class SuperiorEmployeePositionMasterRepository {
     LEFT JOIN tb_employee_position_master_sync tepms_parent ON tepms_parent.employee_position_master_sync_id = tgm_parent.chief_employee_position_id AND tepms_parent.deletedAt IS NULL
     LEFT JOIN tb_position_master_variant tpmv_parent ON tpmv_parent.position_master_variant_id = tepms_parent.position_master_variant_id
     LEFT JOIN tb_employee te_parent ON te_parent.employee_number = tepms_parent.employee_number
+    LEFT JOIN tb_position_master_v2 tpm_gh ON tpmv_gh.position_master_id = tpm_gh.position_master_id 
+    LEFT JOIN tb_position_master_v2 tpm_parent ON tpmv_parent.position_master_id = tpm_parent.position_master_id 
     -- (end) case when position_master_id are group head
     ${additionalJoin?.length ? ` ${additionalJoin.join("\n")}` : ""}
     WHERE 1 = 1
@@ -53,6 +62,8 @@ export class SuperiorEmployeePositionMasterRepository {
     })}
     ${queryFilter || ""}
           `;
+
+    // fs.writeFileSync('query.sql', query);
 
     return query;
   }

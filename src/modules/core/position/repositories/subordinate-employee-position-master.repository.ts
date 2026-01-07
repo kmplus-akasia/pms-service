@@ -1,4 +1,5 @@
 import { startDateEndDateFilter } from '../../../../lib/startDateEndDateFilter';
+// import * as fs from 'fs';
 
 interface SubordinatePositionQueryParams {
   queryFilter?: string;
@@ -12,7 +13,7 @@ export class SubordinateEmployeePositionMasterRepository {
     SELECT
       CASE
         WHEN tpmv2.position_master_variant_id = tpmv.position_master_variant_id THEN tpm_gh.position_master_id
-        ELSE tpm.position_master_id
+        ELSE tpm2.position_master_id
       END AS position_master_id,
       CASE
         WHEN tpmv2.position_master_variant_id = tpmv.position_master_variant_id THEN tpmv_gh.position_master_variant_id
@@ -22,7 +23,14 @@ export class SubordinateEmployeePositionMasterRepository {
         WHEN tpmv2.position_master_variant_id = tpmv.position_master_variant_id THEN te_gh.employee_number
         ELSE tepms2.employee_number
       END AS employee_number,
-      COALESCE(te.firstname, te_gh.firstname) as name
+      CASE
+        WHEN tpmv2.position_master_variant_id = tpmv.position_master_variant_id THEN te_gh.firstname
+        ELSE te.firstname
+      END AS employee_name,
+      CASE
+        WHEN tpmv2.position_master_variant_id = tpmv.position_master_variant_id THEN tpm_gh.name
+        ELSE tpm2.name
+      END AS position_name
       ${additionalData?.length ? `, ${additionalData.join(", ")}` : ""}
     FROM tb_position_master_v2 tpm
     LEFT JOIN tb_position_master_variant tpmv ON tpmv.position_master_id = tpm.position_master_id

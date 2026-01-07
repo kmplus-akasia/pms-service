@@ -23,12 +23,6 @@ export class PositionController {
     description: 'Position master ID(s) to find superiors for',
     example: '123'
   })
-  @ApiQuery({
-    name: 'additionalData',
-    required: false,
-    description: 'Additional fields to include in the response',
-    example: 'employee.name,position.title'
-  })
   @ApiResponse({
     status: 200,
     description: 'Superior employees retrieved successfully',
@@ -54,20 +48,15 @@ export class PositionController {
   })
   async getSuperiors(
     @Query('position_master_id') positionMasterId: string,
-    @Query('additionalData') additionalData?: string,
   ) {
     try {
       const positionIds = positionMasterId.includes(',')
         ? positionMasterId.split(',').map(id => parseInt(id.trim()))
         : [parseInt(positionMasterId)];
 
-      const additionalDataArray = additionalData
-        ? additionalData.split(',').map(field => field.trim())
-        : undefined;
-
       const [superiors] = await this.getSuperiorByPositionService.execute({
         position_master_id: positionIds,
-        additionalData: additionalDataArray,
+        additionalData: [],
       });
 
       return {
@@ -90,18 +79,6 @@ export class PositionController {
     name: 'position_master_id',
     description: 'Position master ID(s) to find subordinates for',
     example: '123'
-  })
-  @ApiQuery({
-    name: 'search',
-    required: false,
-    description: 'Search subordinates by name',
-    example: 'john'
-  })
-  @ApiQuery({
-    name: 'additionalData',
-    required: false,
-    description: 'Additional fields to include in the response',
-    example: 'position.level,department.name'
   })
   @ApiResponse({
     status: 200,
@@ -129,22 +106,16 @@ export class PositionController {
   })
   async getSubordinates(
     @Query('position_master_id') positionMasterId: string,
-    @Query('search') search?: string,
-    @Query('additionalData') additionalData?: string,
   ) {
     try {
       const positionIds = positionMasterId.includes(',')
         ? positionMasterId.split(',').map(id => parseInt(id.trim()))
         : [parseInt(positionMasterId)];
 
-      const additionalDataArray = additionalData
-        ? additionalData.split(',').map(field => field.trim())
-        : undefined;
-
       const [subordinates] = await this.getSubordinateByPositionService.execute({
         position_master_id: positionIds,
-        search,
-        additionalData: additionalDataArray,
+        search: undefined,
+        additionalData: [],
       });
 
       return {
