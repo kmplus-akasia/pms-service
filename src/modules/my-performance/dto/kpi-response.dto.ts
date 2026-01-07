@@ -4,6 +4,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 enum KpiType {
   IMPACT = 'IMPACT',
   OUTPUT = 'OUTPUT',
+  SUB_IMPACT = 'SUB_IMPACT',
   KAI = 'KAI',
 }
 

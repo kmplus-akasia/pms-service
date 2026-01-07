@@ -436,7 +436,8 @@ export class PkpiIntegrationService {
           position.position_master_variant_id,
           year,
           periode,
-          kpi_for_group_id
+          kpi_for_group_id,
+          position.employee_number
         );
         preparedKpis.push(preparedKpi);
       }
@@ -558,7 +559,8 @@ export class PkpiIntegrationService {
     positionMasterVariantId: number,
     year: number,
     periode: string,
-    kpiForGroupId: number
+    kpiForGroupId: number,
+    employeeNumber: string
   ): PreparedKpiData {
     const kpiData: Partial<KpiEntity> = {
       // Basic fields
@@ -581,7 +583,7 @@ export class PkpiIntegrationService {
 
       // Group and source
       kpiForGroupId: kpiForGroupId,
-      source: Source.SYSTEM,
+      source: Source.PKPI,
 
       // Status
       itemApprovalStatus: ItemApprovalStatus.APPROVED, // PKPI data is already approved
@@ -594,11 +596,11 @@ export class PkpiIntegrationService {
     };
 
     const ownershipData: Partial<KpiOwnershipEntity> = {
-      employeeNumber: 'SYSTEM', // TODO: Map to actual employee
+      employeeNumber: employeeNumber,
       positionMasterVariantId: positionMasterVariantId,
       ownershipType: OwnershipType.OWNER,
       weight: pKPI.BOBOT,
-      weightApprovalStatus: WeightApprovalStatus.APPROVED,
+      weightApprovalStatus: WeightApprovalStatus.DRAFT,
       year: year,
       version: 1,
     };
@@ -626,6 +628,11 @@ export class PkpiIntegrationService {
    */
   private mapKpiType(pKPI: PKpiData): KpiType {
     // TODO: Implement proper mapping logic based on business rules
+    // * For now, impact when targetUnit = Rupiah
+    if (pKPI.SATUAN && pKPI.SATUAN.includes('Rupiah')) {
+      return KpiType.IMPACT;
+    }
+  
     // For now, default to OUTPUT
     return KpiType.OUTPUT;
   }
@@ -669,6 +676,8 @@ export class PkpiIntegrationService {
       case 'Semester':
       case 'Semesteran':
         return MonitoringPeriod.QUARTERLY; // Map to quarterly as closest match
+      case 'Triwulanan':
+        return MonitoringPeriod.QUARTERLY;
       default:
         return MonitoringPeriod.MONTHLY;
     }
@@ -685,8 +694,13 @@ export class PkpiIntegrationService {
     SELECT
         tgm.p_kpi_group_code,
         tgm.group_master_id,
-        tpmv.position_master_variant_id
+        tpmv.position_master_variant_id,
+        tepms.employee_number
     FROM tb_position_master_variant tpmv
+    LEFT JOIN tb_employee_position_master_sync tepms ON tepms.position_master_variant_id = tpmv.position_master_variant_id AND tepms.deletedAt IS NULL
+    AND ${dateToTwFilter.query({
+        tbAlias: "tepms",
+    })}
     LEFT JOIN tb_position_master_v2 tpm ON tpm.position_master_id = tpmv.position_master_id AND tpm.deletedAt IS NULL
     AND ${dateToTwFilter.query({
         tbAlias: "tpm",
