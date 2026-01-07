@@ -21,6 +21,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { MyPerformanceModule } from './modules/my-performance';
 import { MyTeamPerformanceModule } from './modules/team/my-team-performance.module';
 import { PkpiModule } from './modules/pkpi/pkpi.module';
+import { PositionModule } from './modules/position/position.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { PkpiModule } from './modules/pkpi/pkpi.module';
     MyPerformanceModule,
     MyTeamPerformanceModule,
     PkpiModule,
+    PositionModule,
   ],
   controllers: [AppController],
   providers: [AppService],
