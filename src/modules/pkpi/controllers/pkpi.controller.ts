@@ -165,9 +165,9 @@ export class PkpiController {
     }
   }
 
-  @Post('sync-group-head')
+  @Post('prepare-group-head')
   @ApiOperation({
-    summary: 'Synchronize PKPI data to group heads',
+    summary: 'Prepare PKPI data for group heads',
     description: 'Fetch and prepare PKPI data from external service for synchronization to group head KPIs. This prepares data structures but does not write to database.'
   })
   @ApiBody({
@@ -238,9 +238,9 @@ export class PkpiController {
     status: 500,
     description: 'Internal server error - External service unavailable or data processing failed'
   })
-  async syncPkpiToGroupHead(@Body() syncDto: SyncPkpiDto) {
+  async preparePkpiToGroupHead(@Body() syncDto: SyncPkpiDto) {
     try {
-      this.logger.log('=== SYNC GROUP HEAD PKPI', {
+      this.logger.log('=== PREPARE GROUP HEAD PKPI', {
         year: syncDto.year,
         periode: syncDto.periode,
         group_ids: syncDto.group_ids,
@@ -248,7 +248,7 @@ export class PkpiController {
         subholding_ids: syncDto.subholding_ids,
       });
 
-      console.time('=== SYNC GROUP HEAD PKPI');
+      console.time('=== PREPARE GROUP HEAD PKPI');
 
       const result = await this.pkpiIntegrationService.preparePkpiData({
         periode: syncDto.periode,
@@ -258,12 +258,156 @@ export class PkpiController {
         subholding_ids: syncDto.subholding_ids || [],
       });
 
-      console.timeEnd('=== SYNC GROUP HEAD PKPI');
+      console.timeEnd('=== PREPARE GROUP HEAD PKPI');
 
       return {
         success: true,
         data: result,
         message: 'PKPI data prepared successfully',
+      };
+    } catch (error) {
+      this.logger.error('Error preparing PKPI to group head:', error);
+      throw error;
+    }
+  }
+
+  @Post('sync-group-head')
+  @ApiOperation({
+    summary: 'Synchronize PKPI data to group heads (Prepare + Write)',
+    description: 'Fetch PKPI data from external service, prepare it, and write to database (KPI and KPI Ownership tables). This is a complete synchronization process.'
+  })
+  @ApiBody({
+    type: SyncPkpiDto,
+    description: 'Synchronization parameters',
+    examples: {
+      'full-sync': {
+        summary: 'Full synchronization',
+        value: {
+          year: 2026,
+          periode: '1',
+          group_ids: ['GROUP001', 'GROUP002'],
+          regional_ids: ['REG1-RH1', 'REG2-RH2'],
+          subholding_ids: ['SPJM-PLJM', 'SPMT-PLMT']
+        }
+      },
+      'group-only': {
+        summary: 'Group KPIs only',
+        value: {
+          year: 2026,
+          periode: '1',
+          group_ids: ['GROUP001']
+        }
+      }
+    }
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'PKPI data synchronized successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        data: {
+          type: 'object',
+          properties: {
+            prepared: {
+              type: 'object',
+              properties: {
+                totalKpis: { type: 'number', example: 150 },
+                impactedGroupIds: {
+                  type: 'array',
+                  items: { type: 'number' },
+                  example: [123, 456]
+                }
+              }
+            },
+            written: {
+              type: 'object',
+              properties: {
+                successCount: { type: 'number', example: 148 },
+                failedCount: { type: 'number', example: 2 },
+                createdKpiIds: {
+                  type: 'array',
+                  items: { type: 'number' },
+                  example: [1001, 1002, 1003]
+                },
+                errors: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      index: { type: 'number' },
+                      error: { type: 'string' }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        message: { type: 'string', example: 'PKPI data synchronized successfully. 148 KPIs created, 2 failed.' }
+      }
+    }
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request - Invalid synchronization parameters'
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error - External service unavailable or data processing failed'
+  })
+  async syncPkpiToGroupHead(@Body() syncDto: SyncPkpiDto) {
+    try {
+      this.logger.log('=== SYNC GROUP HEAD PKPI (PREPARE + WRITE)', {
+        year: syncDto.year,
+        periode: syncDto.periode,
+        group_ids: syncDto.group_ids,
+        regional_ids: syncDto.regional_ids,
+        subholding_ids: syncDto.subholding_ids,
+      });
+
+      console.time('=== SYNC GROUP HEAD PKPI - TOTAL');
+
+      // Step 1: Prepare PKPI data
+      console.time('=== PREPARE PKPI DATA');
+      const preparedResult = await this.pkpiIntegrationService.preparePkpiData({
+        periode: syncDto.periode,
+        year: syncDto.year,
+        group_ids: syncDto.group_ids || [],
+        regional_ids: syncDto.regional_ids || [],
+        subholding_ids: syncDto.subholding_ids || [],
+      });
+      console.timeEnd('=== PREPARE PKPI DATA');
+
+      // Step 2: Write prepared data to database
+      console.time('=== WRITE TO DATABASE');
+      const writeResult = await this.pkpiIntegrationService.writePreparedKpisToDatabase(
+        preparedResult.preparedKpis
+      );
+      console.timeEnd('=== WRITE TO DATABASE');
+
+      console.timeEnd('=== SYNC GROUP HEAD PKPI - TOTAL');
+
+      const message = `PKPI data synchronized successfully. ${writeResult.successCount} KPIs created${
+        writeResult.failedCount > 0 ? `, ${writeResult.failedCount} failed` : ''
+      }.`;
+
+      return {
+        success: true,
+        data: {
+          prepared: {
+            totalKpis: preparedResult.preparedKpis.length,
+            impactedGroupIds: preparedResult.impactedGroupIds,
+          },
+          written: {
+            successCount: writeResult.successCount,
+            failedCount: writeResult.failedCount,
+            createdKpiIds: writeResult.createdKpis.map(kpi => kpi.kpiId),
+            errors: writeResult.errors,
+          },
+        },
+        message,
       };
     } catch (error) {
       this.logger.error('Error syncing PKPI to group head:', error);

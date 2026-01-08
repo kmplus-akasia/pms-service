@@ -25,6 +25,7 @@ import { MysqlService } from '../../../infrastructure/database/mysql.service';
 
 // Import service
 import { PkpiService } from './pkpi.service';
+import { KpiRepository } from '../../core/kpi/repositories/kpi.repository';
 
 export interface PKpiParams {
   periode: string;
@@ -66,6 +67,7 @@ export class PkpiIntegrationService {
   constructor(
     private readonly pkpiService: PkpiService,
     private readonly mysqlService: MysqlService,
+    private readonly kpiRepository: KpiRepository,
   ) {}
 
   // Regional and Subholding mappings
@@ -360,6 +362,12 @@ export class PkpiIntegrationService {
     preparedKpis: PreparedKpiData[];
     groupCodeToGroupId: Record<string, number>;
     impactedGroupIds: number[];
+    result: {
+      successCount: number;
+      failedCount: number;
+      createdKpis: KpiEntity[];
+      errors: Array<{ index: number; error: string }>;
+    };
   }> {
     this.logger.log(`Starting PKPI data preparation for period ${periode}, year ${year}`);
 
@@ -443,8 +451,74 @@ export class PkpiIntegrationService {
       }
     }
 
+    // * Write prepared KPI data to database
+    const result = await this.writePreparedKpisToDatabase(preparedKpis);
     this.logger.log(`Prepared ${preparedKpis.length} KPIs for synchronization`);
-    return { preparedKpis, groupCodeToGroupId, impactedGroupIds };
+    return { preparedKpis, groupCodeToGroupId, impactedGroupIds, result };
+  }
+
+  /**
+   * Write prepared KPI data to database
+   * This function saves KPI and KPI ownership records to the database
+   */
+  async writePreparedKpisToDatabase(
+    preparedKpis: PreparedKpiData[]
+  ): Promise<{
+    successCount: number;
+    failedCount: number;
+    createdKpis: KpiEntity[];
+    errors: Array<{ index: number; error: string }>;
+  }> {
+    this.logger.log(`Starting to write ${preparedKpis.length} KPIs to database`);
+
+    let successCount = 0;
+    let failedCount = 0;
+    const createdKpis: KpiEntity[] = [];
+    const errors: Array<{ index: number; error: string }> = [];
+
+    for (let i = 0; i < preparedKpis.length; i++) {
+      const preparedKpi = preparedKpis[i];
+      
+      try {
+        // Create KPI entity
+        const createdKpi = await this.kpiRepository.create(preparedKpi.kpi);
+        
+        // Create ownership entity with the created KPI ID
+        const ownershipData = {
+          ...preparedKpi.ownership,
+          kpiId: createdKpi.kpiId,
+        };
+        
+        await this.kpiRepository.createOwnership(ownershipData);
+        
+        createdKpis.push(createdKpi);
+        successCount++;
+        
+        this.logger.log(
+          `Successfully created KPI ${createdKpi.kpiId} with ownership for employee ${preparedKpi.ownership.employeeNumber}`
+        );
+      } catch (error) {
+        failedCount++;
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        errors.push({ index: i, error: errorMessage });
+        
+        this.logger.error(
+          `Failed to create KPI at index ${i}: ${errorMessage}`,
+          error instanceof Error ? error.stack : undefined
+        );
+      }
+    }
+
+    this.logger.log(
+      `Completed writing KPIs to database. Success: ${successCount}, Failed: ${failedCount}`
+    );
+
+    return {
+      successCount,
+      failedCount,
+      createdKpis,
+      errors,
+    };
   }
 
   /**
@@ -722,6 +796,8 @@ export class PkpiIntegrationService {
     const positionVariants = await this.mysqlService.query<any>(query, {periode, year});
     return positionVariants;
   }
+
+  
 
   /**
    * Utility function to get unique items by key
