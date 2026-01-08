@@ -32,66 +32,68 @@ export enum WeightApprovalStatus {
 @Index(['weightApprovalStatus', 'weightApproverEmployeeNumber'])
 @Index(['year', 'startDate', 'endDate'])
 export class KpiOwnershipEntity {
-  @PrimaryGeneratedColumn({ type: 'bigint' })
+  @PrimaryGeneratedColumn({ type: 'bigint', name: 'kpi_ownership_id' })
   kpiOwnershipId: number;
 
-  @Column({ type: 'bigint', nullable: false })
+  @Column({ type: 'bigint', nullable: false, name: 'kpi_id' })
   kpiId: number;
 
-  @Column({ type: 'varchar', length: 50, nullable: true })
+  @Column({ type: 'varchar', length: 50, nullable: true, name: 'employee_number' })
   employeeNumber: string;
 
-  @Column({ type: 'bigint', nullable: true })
+  @Column({ type: 'bigint', nullable: true, name: 'position_master_variant_id' })
   positionMasterVariantId: number;
 
   @Column({
     type: 'enum',
     enum: OwnershipType,
     nullable: false,
+    name: 'ownership_type',
   })
   ownershipType: OwnershipType;
 
-  @Column({ type: 'float', nullable: true })
+  @Column({ type: 'float', nullable: true, name: 'weight' })
   weight: number;
 
   @Column({
     type: 'enum',
     enum: WeightApprovalStatus,
     nullable: true,
+    name: 'weight_approval_status',
   })
   weightApprovalStatus: WeightApprovalStatus;
 
-  @Column({ type: 'varchar', length: 50, nullable: true })
+  @Column({ type: 'varchar', length: 50, nullable: true, name: 'weight_approver_employee_number' })
   weightApproverEmployeeNumber: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: 'text', nullable: true, name: 'weight_approver_text' })
   weightApproverText: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: 'text', nullable: true, name: 'weight_approval_notes' })
   weightApprovalNotes: string;
 
-  @Column({ type: 'float', nullable: true })
+  @Column({ type: 'float', nullable: true, name: 'last_realization' })
   lastRealization: number;
 
-  @Column({ type: 'date', nullable: true })
+  @Column({ type: 'date', nullable: true, name: 'start_date' })
   startDate: Date;
 
-  @Column({ type: 'date', nullable: true })
+  @Column({ type: 'date', nullable: true, name: 'end_date' })
   endDate: Date;
 
-  @Column({ type: 'int', nullable: true })
+  @Column({ type: 'int', nullable: true, name: 'year' })
   year: number;
 
-  @Column({ type: 'int' })
+  @Column({ type: 'int', name: 'version' })
   version: number;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  @DeleteDateColumn({ nullable: true })
+  @DeleteDateColumn({ nullable: true, name: 'deleted_at' })
   deletedAt: Date;
 
   // Relationships

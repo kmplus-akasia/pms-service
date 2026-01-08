@@ -663,7 +663,7 @@ export class PkpiIntegrationService {
       itemApprovalStatus: ItemApprovalStatus.APPROVED, // PKPI data is already approved
 
       // Metadata
-      createdByEmployeeNumber: 'SYSTEM',
+      createdByEmployeeNumber: null,
       createdByText: 'PKPI Integration Service',
       isActive: true,
       version: 1,

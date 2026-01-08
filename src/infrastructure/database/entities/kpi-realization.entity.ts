@@ -33,28 +33,29 @@ export enum ApprovalStatus {
 @Index(['source'])
 @Index(['year', 'week'])
 export class KpiRealizationEntity {
-  @PrimaryGeneratedColumn({ type: 'bigint' })
+  @PrimaryGeneratedColumn({ type: 'bigint', name: 'kpi_realization_id' })
   kpiRealizationId: number;
 
-  @Column({ type: 'bigint', nullable: false })
+  @Column({ type: 'bigint', nullable: false, name: 'kpi_id' })
   kpiId: number;
 
-  @Column({ type: 'varchar', length: 50, nullable: true })
+  @Column({ type: 'varchar', length: 50, nullable: true, name: 'employee_number' })
   employeeNumber: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: 'text', nullable: true, name: 'notes' })
   notes: string;
 
-  @Column({ type: 'float', nullable: true })
+  @Column({ type: 'float', nullable: true, name: 'realization' })
   realization: number;
 
-  @Column({ type: 'bigint', nullable: true })
+  @Column({ type: 'bigint', nullable: true, name: 'file_id' })
   fileId: number;
 
   @Column({
     type: 'enum',
     enum: Source,
     default: Source.SYSTEM,
+    name: 'source',
   })
   source: Source;
 
@@ -62,6 +63,7 @@ export class KpiRealizationEntity {
     type: 'enum',
     enum: SubmissionStatus,
     nullable: true,
+    name: 'submission_status',
   })
   submissionStatus: SubmissionStatus;
 
@@ -69,49 +71,50 @@ export class KpiRealizationEntity {
     type: 'enum',
     enum: ApprovalStatus,
     nullable: true,
+    name: 'approval_status',
   })
   approvalStatus: ApprovalStatus;
 
-  @Column({ type: 'varchar', length: 50, nullable: true })
+  @Column({ type: 'varchar', length: 50, nullable: true, name: 'approver_employee_number' })
   approverEmployeeNumber: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: 'text', nullable: true, name: 'approver_employee_text' })
   approverEmployeeText: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: 'text', nullable: true, name: 'approval_notes' })
   approvalNotes: string;
 
-  @Column({ type: 'date', nullable: true })
+  @Column({ type: 'date', nullable: true, name: 'submit_date' })
   submitDate: Date;
 
-  @Column({ type: 'date', nullable: true })
+  @Column({ type: 'date', nullable: true, name: 'generated_date' })
   generatedDate: Date;
 
-  @Column({ type: 'int', nullable: true })
+  @Column({ type: 'int', nullable: true, name: 'day' })
   day: number;
 
-  @Column({ type: 'int', nullable: true })
+  @Column({ type: 'int', nullable: true, name: 'week' })
   week: number;
 
-  @Column({ type: 'int', nullable: true })
+  @Column({ type: 'int', nullable: true, name: 'month' })
   month: number;
 
-  @Column({ type: 'int', nullable: true })
+  @Column({ type: 'int', nullable: true, name: 'year' })
   year: number;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ type: 'boolean', default: false, name: 'is_concluded' })
   isConcluded: boolean;
 
-  @Column({ type: 'int' })
+  @Column({ type: 'int', name: 'version' })
   version: number;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  @DeleteDateColumn({ nullable: true })
+  @DeleteDateColumn({ nullable: true, name: 'deleted_at' })
   deletedAt: Date;
 
   // Relationships

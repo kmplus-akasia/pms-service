@@ -21,44 +21,45 @@ export enum ScheduleType {
 @Index(['startDate', 'endDate'])
 @Index(['isActive'])
 export class KpiScheduleEntity {
-  @PrimaryGeneratedColumn({ type: 'bigint' })
+  @PrimaryGeneratedColumn({ type: 'bigint', name: 'kpi_schedule_id' })
   kpiScheduleId: number;
 
-  @Column({ type: 'varchar', length: 100, nullable: true })
+  @Column({ type: 'varchar', length: 100, nullable: true, name: 'name' })
   name: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: 'text', nullable: true, name: 'notes' })
   notes: string;
 
   @Column({
     type: 'enum',
     enum: ScheduleType,
     nullable: false,
+    name: 'type',
   })
   type: ScheduleType;
 
-  @Column({ type: 'date', nullable: true })
+  @Column({ type: 'date', nullable: true, name: 'start_date' })
   startDate: Date;
 
-  @Column({ type: 'date', nullable: true })
+  @Column({ type: 'date', nullable: true, name: 'end_date' })
   endDate: Date;
 
   // Additional fields that might be added based on our guidelines
-  @Column({ type: 'int', nullable: true })
+  @Column({ type: 'int', nullable: true, name: 'year' })
   year: number;
 
-  @Column({ type: 'int', nullable: true })
+  @Column({ type: 'int', nullable: true, name: 'quarter' })
   quarter: number;
 
-  @Column({ type: 'boolean', default: true })
+  @Column({ type: 'boolean', default: true, name: 'is_active' })
   isActive: boolean;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  @DeleteDateColumn({ nullable: true })
+  @DeleteDateColumn({ nullable: true, name: 'deleted_at' })
   deletedAt: Date;
 }
