@@ -14,23 +14,23 @@ export class SubordinateEmployeePositionMasterRepository {
       CASE
         WHEN tpmv2.position_master_variant_id = tpmv.position_master_variant_id THEN tpm_gh.position_master_id
         ELSE tpm2.position_master_id
-      END AS position_master_id,
+      END AS subordinate_position_master_id,
       CASE
         WHEN tpmv2.position_master_variant_id = tpmv.position_master_variant_id THEN tpmv_gh.position_master_variant_id
         ELSE tpmv2.position_master_variant_id
-      END AS position_master_variant_id,
+      END AS subordinate_position_master_variant_id,
       CASE
         WHEN tpmv2.position_master_variant_id = tpmv.position_master_variant_id THEN te_gh.employee_number
         ELSE tepms2.employee_number
-      END AS employee_number,
+      END AS subordinate_employee_number,
       CASE
         WHEN tpmv2.position_master_variant_id = tpmv.position_master_variant_id THEN te_gh.firstname
         ELSE te.firstname
-      END AS employee_name,
+      END AS subordinate_employee_name,
       CASE
         WHEN tpmv2.position_master_variant_id = tpmv.position_master_variant_id THEN tpm_gh.name
         ELSE tpm2.name
-      END AS position_name
+      END AS subordinate_position_name
       ${additionalData?.length ? `, ${additionalData.join(", ")}` : ""}
     FROM tb_position_master_v2 tpm
     LEFT JOIN tb_position_master_variant tpmv ON tpmv.position_master_id = tpm.position_master_id
